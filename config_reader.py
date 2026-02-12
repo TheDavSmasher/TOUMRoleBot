@@ -20,15 +20,16 @@ def active_config_roles(config: configparser.ConfigParser) -> dict[RoleTeam, lis
     roles_config = config.items("Roles")
     active_roles: dict[RoleTeam, list[str]] = {}
     for i in range(0, len(roles_config), 2):
-        num_config = roles_config[i]
-        num_match = role_active_pattern.search(num_config[0])
-        chance_config = roles_config[i+1]
-        chance_match = role_active_pattern.search(chance_config[0])
+        num_config, num_val = roles_config[i]
+        num_match = role_active_pattern.search(num_config)
+        chance_config, chance_val = roles_config[i+1]
+        chance_match = role_active_pattern.search(chance_config)
         if (not num_match or not chance_match or
                 (team := num_match.group(2)) != chance_match.group(2) or
                 (role := num_match.group(3)) != chance_match.group(3) or
-                num_match.group(1) != "num" or int(num_config[1]) <= 0 or
-                chance_match.group(1) != "chance" or int(chance_config[1]) <= 0):
+                team.startswith("hns") or
+                num_match.group(1) != "num" or int(num_val) <= 0 or
+                chance_match.group(1) != "chance" or int(chance_val) <= 0):
             continue
         r_team = RoleTeam[team.capitalize()]
         if r_team not in active_roles:
