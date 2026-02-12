@@ -1,5 +1,6 @@
 import re
 import configparser
+from typing import Callable
 
 from role_types import RoleTeam
 
@@ -16,24 +17,35 @@ def load_config(p: str) -> configparser.ConfigParser:
     return config
 
 
-def active_config_roles(config: configparser.ConfigParser) -> dict[RoleTeam, list[str]]:
+def mod_config_roles(
+        config: configparser.ConfigParser,
+        role_pred: Callable[[re.Match[str], int, re.Match[str], int], bool] | None = None
+) -> dict[RoleTeam, list[str]]:
     roles_config = config.items("Roles")
-    active_roles: dict[RoleTeam, list[str]] = {}
+    roles: dict[RoleTeam, list[str]] = {}
     for i in range(0, len(roles_config), 2):
         num_config, num_val = roles_config[i]
         num_match = role_active_pattern.search(num_config)
-        chance_config, chance_val = roles_config[i+1]
+        chance_config, chance_val = roles_config[i + 1]
         chance_match = role_active_pattern.search(chance_config)
         if (not num_match or not chance_match or
                 (team := num_match.group(2)) != chance_match.group(2) or
                 (role := num_match.group(3)) != chance_match.group(3) or
-                team.startswith("hns") or
-                num_match.group(1) != "num" or int(num_val) <= 0 or
-                chance_match.group(1) != "chance" or int(chance_val) <= 0):
+                team.startswith("hns") or role_pred and
+                role_pred(num_match, int(num_val), chance_match, int(chance_val))):
             continue
         r_team = RoleTeam[team.capitalize()]
-        if r_team not in active_roles:
-            active_roles[r_team] = []
-        active_roles[r_team].append(role.removesuffix("tou").capitalize())
+        if r_team not in roles:
+            roles[r_team] = []
+        roles[r_team].append(role.removesuffix("tou").capitalize())
 
-    return active_roles
+    return roles
+
+
+def active_config_roles(config: configparser.ConfigParser) -> dict[RoleTeam, list[str]]:
+    return mod_config_roles(
+        config,
+        lambda num_match, num_val, chance_match, chance_val:
+        num_match.group(1) != "num" or num_val <= 0 or
+        chance_match.group(1) != "chance" or chance_val <= 0
+    )
