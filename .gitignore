@@ -1,0 +1,11 @@
+#PyCharm files
+.idea/
+
+#Protected Data
+.env
+
+# Specific Configs
+**.cfg
+
+# Python initials
+requirements.txt
