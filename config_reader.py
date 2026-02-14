@@ -7,7 +7,7 @@ from role_types import RoleTeam
 role_active_pattern = re.compile(r"(\w+) TownOfUs\.Roles\.(\w+)\.(\w+)Role", re.IGNORECASE)
 
 
-def load_config(p: str) -> configparser.ConfigParser:
+def load_config(p: str | bytes) -> configparser.ConfigParser:
     config = configparser.ConfigParser()
     loaded = config.read(p)
     if not loaded:
