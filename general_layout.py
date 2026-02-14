@@ -6,7 +6,7 @@ from discord.ui import *
 
 
 class LazyLayoutView(LayoutView, ABC):
-    def __init__(self, parent_view: LayoutView):
+    def __init__(self, parent_view: LayoutView = None):
         super().__init__(timeout=None)
         self.parent_view = parent_view
         self._loaded = False

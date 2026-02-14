@@ -57,7 +57,7 @@ class RoleContainer(Container):
 
 
 class RoleLayout(LazyLayoutView):
-    def __init__(self, alignment: AlignData, name: str, parent_view: LayoutView):
+    def __init__(self, alignment: AlignData, name: str, parent_view: LayoutView = None):
         super().__init__(parent_view)
         self.team = alignment.team
         self.category = alignment.category
@@ -68,7 +68,8 @@ class RoleLayout(LazyLayoutView):
         if role_key not in role_data:
             role_data[role_key] = get_role_desc(self.team, self.category.lower(), self.name)
         self.add_item(RoleContainer(role_data[role_key]))
-        self.add_item(ActionRow(BackButton(self.parent_view)))
+        if self.parent_view:
+            self.add_item(ActionRow(BackButton(self.parent_view)))
 
 # endregion
 
@@ -76,7 +77,7 @@ class RoleLayout(LazyLayoutView):
 # region Category
 
 class CategoryContainer(Container):
-    def __init__(self, alignment: AlignData, parent_view: LayoutView):
+    def __init__(self, alignment: AlignData, parent_view: LayoutView = None):
         team = alignment.team
         category = alignment.category
         super().__init__(accent_color=team_colors[team])
@@ -101,13 +102,14 @@ class CategoryContainer(Container):
 
 
 class CategoryLayout(LazyLayoutView):
-    def __init__(self, alignment: AlignData, parent_view: LayoutView):
+    def __init__(self, alignment: AlignData, parent_view: LayoutView = None):
         super().__init__(parent_view)
         self.alignment = alignment
 
     def _load_view(self):
         self.add_item(CategoryContainer(self.alignment, self))
-        self.add_item(ActionRow(BackButton(self.parent_view)))
+        if self.parent_view:
+            self.add_item(ActionRow(BackButton(self.parent_view)))
 
 # endregion
 
@@ -115,7 +117,7 @@ class CategoryLayout(LazyLayoutView):
 # region Teams
 
 class TeamContainer(Container):
-    def __init__(self, team: RoleTeam, parent_view: LayoutView):
+    def __init__(self, team: RoleTeam, parent_view: LayoutView = None):
         super().__init__(accent_color=team_colors[team])
         self.add_item(TextDisplay(f"## {team.name} Roles"))
 
@@ -136,10 +138,11 @@ class TeamContainer(Container):
 
 
 class TeamLayout(LayoutView):
-    def __init__(self, team: RoleTeam, parent_view: LayoutView):
+    def __init__(self, team: RoleTeam, parent_view: LayoutView = None):
         super().__init__(timeout=None)
         self.add_item(TeamContainer(team, self))
-        self.add_item(ActionRow(BackButton(parent_view)))
+        if parent_view:
+            self.add_item(ActionRow(BackButton(parent_view)))
 
 # endregion
 
