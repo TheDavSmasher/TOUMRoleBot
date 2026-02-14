@@ -22,6 +22,8 @@ def mod_config_roles(
 ) -> dict[RoleTeam, list[str]]:
     roles_config = config.items("Roles")
     roles: dict[RoleTeam, list[str]] = {}
+    for team in RoleTeam:
+        roles[team] = []
     for i in range(0, len(roles_config), 2):
         num_config, num_val = roles_config[i]
         num_match = role_active_pattern.search(num_config)
@@ -34,8 +36,6 @@ def mod_config_roles(
                 role_pred(num_match, int(num_val), chance_match, int(chance_val))):
             continue
         r_team = RoleTeam[team.capitalize()]
-        if r_team not in roles:
-            roles[r_team] = []
         roles[r_team].append(role.removesuffix("tou").capitalize())
 
     return roles
