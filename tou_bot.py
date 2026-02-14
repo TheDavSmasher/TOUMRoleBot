@@ -33,8 +33,13 @@ async def all_roles(interaction: discord.Interaction):
 @app_commands.describe(config_file="Config file")
 async def update_roles(interaction: discord.Interaction, config_file: discord.Attachment):
     try:
+        await interaction.response.defer()
         config_byes = await config_file.read()
         reload_config(config_byes)
+        await interaction.followup.send(
+            "Active roles updated.",
+            ephemeral=True
+        )
     except Exception as e:
         await interaction.followup.send(
             f"An error occurred while loading new file: {e}",
