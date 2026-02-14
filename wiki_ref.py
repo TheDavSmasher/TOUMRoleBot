@@ -2,8 +2,7 @@ import requests
 import bs4
 from bs4 import BeautifulSoup
 
-from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
-
+from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles, RoleAlignment
 
 WIKI_URL = "https://au-avengers.github.io/docs.toum.gg/{path}"
 
@@ -33,10 +32,11 @@ def fetch_url_soup(path: str, name: str, att_class: str) -> BeautifulSoup:
     return element
 
 
-def fetch_all_roles() -> TeamCatRoles:
+def fetch_all_roles() -> tuple[TeamCatRoles, RoleAlignment]:
     roles_list = fetch_url_soup(ROLES_PATH, "ul", "theme-doc-sidebar-menu menu__list")
 
     team_dict: TeamCatRoles = {}
+    roles_dict: RoleAlignment = {}
     for team in roles_list.find_all("li", recursive=False):
         name = team.find_next("div")
         name_str = str(name.next.next).removesuffix("s")
@@ -48,7 +48,8 @@ def fetch_all_roles() -> TeamCatRoles:
             for cat_role in category.find_next("ul").find_all("li", recursive=False):
                 role_name = cat_role.find("a").get_text()
                 team_dict[role_team][cat_name].append(role_name)
-    return team_dict
+                roles_dict[role_name] = AlignData(role_team, cat_name)
+    return team_dict, roles_dict
 
 
 def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:

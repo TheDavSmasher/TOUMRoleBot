@@ -26,6 +26,9 @@ class AlignData:
         return AlignData(RoleTeam[s_l[0]], s_l[1].rstrip('\u200b'))
 
 
+RoleAlignment = dict[str, AlignData]
+
+
 @dataclass
 class RoleAbility:
     name: str

@@ -5,7 +5,7 @@ from discord.ui import *
 from discord import SelectOption
 
 from config_reader import load_config, active_config_roles
-from role_types import TeamCatRoles, RoleTeam, RoleDesc, AlignData
+from role_types import TeamCatRoles, RoleTeam, RoleDesc, AlignData, RoleAlignment
 from wiki_ref import fetch_all_roles, get_role_desc, IMAGE_URL
 from general_layout import BackButton, SwitchButton, LazyLayoutView, best_row_length
 
@@ -20,6 +20,8 @@ filter_data = False
 role_data: dict[tuple[RoleTeam, str, str], RoleDesc] = {}
 
 data: TeamCatRoles = {}
+
+roles_list: RoleAlignment = {}
 
 team_colors = {
     RoleTeam.Crewmate: 0x54baef,
@@ -152,8 +154,9 @@ class MongyTeamSelect(Select):
             ]
         )
         global data
+        global roles_list
         if len(data) == 0:
-            data = fetch_all_roles()
+            data, roles_list = fetch_all_roles()
 
     async def callback(self, interaction: discord.Interaction):
         team = RoleTeam(int(self.values[0]))
