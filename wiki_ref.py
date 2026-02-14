@@ -6,7 +6,7 @@ from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
 
 
 ROLES_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmates"
-WIKI_URL = "https://au-avengers.github.io/docs.toum.gg/docs/roles/{team}/{al_type}/{role}"
+ROLE_URL = "https://au-avengers.github.io/docs.toum.gg/docs/roles/{team}/{al_type}/{role}"
 IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{icon}.png"
 
 
@@ -45,7 +45,7 @@ def fetch_all_roles() -> TeamCatRoles:
 
 
 def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:
-    role_info = fetch_url_soup(WIKI_URL.format(team=team.name.lower(), al_type=al_type, role=role),
+    role_info = fetch_url_soup(ROLE_URL.format(team=team.name.lower(), al_type=al_type, role=role),
                                "div", "theme-doc-markdown markdown")
 
     name = role_info.find_next("h1")
