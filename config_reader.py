@@ -1,3 +1,4 @@
+import io
 import re
 import configparser
 from typing import Callable
@@ -9,9 +10,12 @@ role_active_pattern = re.compile(r"(\w+) TownOfUs\.Roles\.(\w+)\.(\w+)Role", re.
 
 def load_config(p: str | bytes) -> configparser.ConfigParser:
     config = configparser.ConfigParser()
-    loaded = config.read(p)
-    if not loaded:
-        raise configparser.ParsingError("Failed to read config file. Please check the file path or contents.")
+    if isinstance(p, bytes):
+        config.read_file(io.StringIO(p.decode()))
+    else:
+        config.read(p)
+    if "Roles" not in config:
+        raise configparser.ParsingError("Failed to read config file. Please check the file contents.")
 
     return config
 
