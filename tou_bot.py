@@ -33,7 +33,9 @@ async def all_roles(interaction: discord.Interaction):
 @app_commands.describe(config_file="Config file")
 async def update_roles(interaction: discord.Interaction, config_file: discord.Attachment):
     try:
-        await interaction.response.defer()
+        await interaction.response.defer(
+            ephemeral=True
+        )
         config_byes = await config_file.read()
         reload_config(config_byes)
         await interaction.followup.send(
