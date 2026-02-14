@@ -11,7 +11,7 @@ from general_layout import BackButton, SwitchButton, LazyLayoutView, best_row_le
 
 # region Data
 
-config = load_config('loaded.cfg')
+config = load_config('conf/loaded.cfg')
 
 filtered_roles: dict[RoleTeam, list[str]] = {}
 
