@@ -5,16 +5,19 @@ from bs4 import BeautifulSoup
 from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
 
 
-MODIFS_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmate"
-MODIF_URL = "https://au-avengers.github.io/docs.toum.gg/docs/modifiers/{category}/{modifier}"
+WIKI_URL = "https://au-avengers.github.io/docs.toum.gg/{path}"
 
-ROLES_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmates"
-ROLE_URL = "https://au-avengers.github.io/docs.toum.gg/docs/roles/{team}/{al_type}/{role}"
+MODIFS_PATH = "docs/category/crewmate"
+MODIF_URL = "docs/modifiers/{category}/{modifier}"
 
-IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{icon}.png"
+ROLES_PATH = "docs/category/crewmates"
+ROLE_URL = "docs/roles/{team}/{al_type}/{role}"
+
+IMAGE_URL = WIKI_URL.format(path="img/Icons/{icon}.png")
 
 
-def fetch_url_soup(url: str, name: str, att_class: str) -> BeautifulSoup:
+def fetch_url_soup(path: str, name: str, att_class: str) -> BeautifulSoup:
+    url = WIKI_URL.format(path=path)
     response = requests.get(url)
     if response.status_code != 200:
         raise requests.exceptions.HTTPError(f"Failed to retrieve page.\nStatus code: {response.status_code}\nURL: {url}")
@@ -31,7 +34,7 @@ def fetch_url_soup(url: str, name: str, att_class: str) -> BeautifulSoup:
 
 
 def fetch_all_roles() -> TeamCatRoles:
-    roles_list = fetch_url_soup(ROLES_URL, "ul", "theme-doc-sidebar-menu menu__list")
+    roles_list = fetch_url_soup(ROLES_PATH, "ul", "theme-doc-sidebar-menu menu__list")
 
     team_dict: dict[RoleTeam, dict[str, list[str]]] = {}
     for team in roles_list.find_all("li", recursive=False):
