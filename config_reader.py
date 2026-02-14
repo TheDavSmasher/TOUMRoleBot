@@ -11,8 +11,7 @@ def load_config(p: str | bytes) -> configparser.ConfigParser:
     config = configparser.ConfigParser()
     loaded = config.read(p)
     if not loaded:
-        print("Failed to read config file. Please check the file path.")
-        exit()
+        raise configparser.ParsingError("Failed to read config file. Please check the file path or contents.")
 
     return config
 

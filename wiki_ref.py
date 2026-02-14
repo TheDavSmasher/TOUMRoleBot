@@ -1,4 +1,5 @@
 import requests
+import bs4
 from bs4 import BeautifulSoup
 
 from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
@@ -12,8 +13,7 @@ IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{role}.png"
 def fetch_url_soup(url: str, name: str, att_class: str) -> BeautifulSoup:
     response = requests.get(url)
     if response.status_code != 200:
-        print(f"Failed to retrieve page, status code: {response.status_code}")
-        exit()
+        raise requests.exceptions.HTTPError(f"Failed to retrieve page.\nStatus code: {response.status_code}\nURL: {url}")
 
     html_content = response.text
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -21,8 +21,7 @@ def fetch_url_soup(url: str, name: str, att_class: str) -> BeautifulSoup:
     element = soup.find(name, {"class": att_class})
 
     if not element:
-        print("Main content div not found.")
-        exit(1)
+        raise bs4.exceptions.FeatureNotFound("Main content div not found.")
 
     return element
 
