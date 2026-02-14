@@ -53,8 +53,7 @@ async def update_roles(interaction: discord.Interaction, config_file: discord.At
 async def on_ready():
     await tree.sync()
 
-token = os.getenv('TOKEN')
-
 
 if __name__ == "__main__":
+    token = os.getenv('TOKEN')
     client.run(token)
