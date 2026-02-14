@@ -33,6 +33,32 @@ team_colors = {
 # endregion
 
 
+# region Helper Functions
+
+def filtered(f: bool):
+    global filter_data
+    filter_data = f
+    global filtered_roles
+    if len(filtered_roles) == 0:
+        filtered_roles = active_config_roles(config)
+
+
+def reload_config(b: str | bytes):
+    global config
+    config = load_config(b)
+    global filtered_roles
+    filtered_roles = {}
+
+
+def load_data():
+    global data
+    global roles_list
+    if len(data) == 0:
+        data, roles_list = fetch_all_roles()
+
+# endregion
+
+
 # region Roles
 
 class RoleContainer(Container):
@@ -169,31 +195,5 @@ class MongyTeamSelect(Select):
 
 class MongyLayout(LayoutView):
     action_row = ActionRow(MongyTeamSelect())
-
-# endregion
-
-
-# region Helper Functions
-
-def filtered(f: bool):
-    global filter_data
-    filter_data = f
-    global filtered_roles
-    if len(filtered_roles) == 0:
-        filtered_roles = active_config_roles(config)
-
-
-def reload_config(b: str | bytes):
-    global config
-    config = load_config(b)
-    global filtered_roles
-    filtered_roles = {}
-
-
-def load_data():
-    global data
-    global roles_list
-    if len(data) == 0:
-        data, roles_list = fetch_all_roles()
 
 # endregion
