@@ -158,10 +158,7 @@ class MongyTeamSelect(Select):
                 for team in RoleTeam
             ]
         )
-        global data
-        global roles_list
-        if len(data) == 0:
-            data, roles_list = fetch_all_roles()
+        load_data()
 
     async def callback(self, interaction: discord.Interaction):
         team = RoleTeam(int(self.values[0]))
@@ -191,5 +188,12 @@ def reload_config(b: str | bytes):
     config = load_config(b)
     global filtered_roles
     filtered_roles = {}
+
+
+def load_data():
+    global data
+    global roles_list
+    if len(data) == 0:
+        data, roles_list = fetch_all_roles()
 
 # endregion
