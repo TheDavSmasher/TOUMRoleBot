@@ -174,3 +174,10 @@ def filtered(f: bool):
     global filtered_roles
     if len(filtered_roles) == 0:
         filtered_roles = active_config_roles(config)
+
+
+def reload_config(b: str | bytes):
+    global config
+    config = load_config(b)
+    global filtered_roles
+    filtered_roles = {}
