@@ -7,7 +7,7 @@ from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
 
 ROLES_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmates"
 WIKI_URL = "https://au-avengers.github.io/docs.toum.gg/docs/roles/{team}/{al_type}/{role}"
-IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{role}.png"
+IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{icon}.png"
 
 
 def fetch_url_soup(url: str, name: str, att_class: str) -> BeautifulSoup:

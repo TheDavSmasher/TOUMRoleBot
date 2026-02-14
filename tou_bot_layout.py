@@ -39,7 +39,7 @@ class RoleContainer(Container):
             TextDisplay(f'## {data.name}'),
             TextDisplay(f'### {data.description}'),
             TextDisplay(f"**Alignment: {data.alignment}**"),
-            accessory=Thumbnail(IMAGE_URL.format(role=data.name)),
+            accessory=Thumbnail(IMAGE_URL.format(icon=data.name)),
         ))
         self.add_item(TextDisplay(data.overview))
         if len(data.abilities) > 0:
