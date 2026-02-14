@@ -56,6 +56,11 @@ def load_data():
     if len(data) == 0:
         data, roles_list = fetch_all_roles()
 
+
+def get_role_list():
+    load_data()
+    return roles_list.items()
+
 # endregion
 
 
