@@ -2,7 +2,7 @@ import os
 import discord
 from discord import app_commands
 
-from tou_bot_layout import MongyLayout, filtered
+from tou_bot_layout import MongyLayout, filtered, reload_config
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -27,6 +27,19 @@ async def all_roles(interaction: discord.Interaction):
         view=MongyLayout(),
         ephemeral=True
     )
+
+
+@tree.command(name="update_roles", description="Update the roles marked as active.")
+@app_commands.describe(config_file="Config file")
+async def update_roles(interaction: discord.Interaction, config_file: discord.Attachment):
+    try:
+        config_byes = await config_file.read()
+        reload_config(config_byes)
+    except Exception as e:
+        await interaction.followup.send(
+            f"An error occurred while loading new file: {e}",
+            ephemeral=True
+        )
 
 
 @client.event
