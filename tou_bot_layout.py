@@ -9,6 +9,7 @@ from role_types import TeamCatRoles, RoleTeam, RoleDesc, AlignData, RoleAlignmen
 from wiki_ref import fetch_all_roles, get_role_desc, IMAGE_URL
 from general_layout import BackButton, SwitchButton, LazyLayoutView, best_row_length
 
+
 # region Data
 
 config = load_config('conf/Default.cfg')
@@ -172,6 +173,8 @@ class MongyLayout(LayoutView):
 # endregion
 
 
+# region Helper Functions
+
 def filtered(f: bool):
     global filter_data
     filter_data = f
@@ -185,3 +188,5 @@ def reload_config(b: str | bytes):
     config = load_config(b)
     global filtered_roles
     filtered_roles = {}
+
+# endregion
