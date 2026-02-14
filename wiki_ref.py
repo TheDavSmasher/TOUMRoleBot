@@ -36,7 +36,7 @@ def fetch_url_soup(path: str, name: str, att_class: str) -> BeautifulSoup:
 def fetch_all_roles() -> TeamCatRoles:
     roles_list = fetch_url_soup(ROLES_PATH, "ul", "theme-doc-sidebar-menu menu__list")
 
-    team_dict: dict[RoleTeam, dict[str, list[str]]] = {}
+    team_dict: TeamCatRoles = {}
     for team in roles_list.find_all("li", recursive=False):
         name = team.find_next("div")
         name_str = str(name.next.next).removesuffix("s")
