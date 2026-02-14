@@ -5,8 +5,12 @@ from bs4 import BeautifulSoup
 from role_types import RoleDesc, RoleAbility, RoleTeam, AlignData, TeamCatRoles
 
 
+MODIFS_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmate"
+MODIF_URL = "https://au-avengers.github.io/docs.toum.gg/docs/modifiers/{category}/{modifier}"
+
 ROLES_URL = "https://au-avengers.github.io/docs.toum.gg/docs/category/crewmates"
 ROLE_URL = "https://au-avengers.github.io/docs.toum.gg/docs/roles/{team}/{al_type}/{role}"
+
 IMAGE_URL = "https://au-avengers.github.io/docs.toum.gg/img/Icons/{icon}.png"
 
 
