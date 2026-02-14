@@ -56,10 +56,10 @@ class RoleContainer(Container):
 
 
 class RoleLayout(LazyLayoutView):
-    def __init__(self, team: RoleTeam, category: str, name: str, parent_view: LayoutView):
+    def __init__(self, alignment: AlignData, name: str, parent_view: LayoutView):
         super().__init__(parent_view)
-        self.team = team
-        self.category = category
+        self.team = alignment.team
+        self.category = alignment.category
         self.name = name
 
     def _load_view(self):
@@ -75,7 +75,9 @@ class RoleLayout(LazyLayoutView):
 # region Category
 
 class CategoryContainer(Container):
-    def __init__(self, team: RoleTeam, category: str, parent_view: LayoutView):
+    def __init__(self, alignment: AlignData, parent_view: LayoutView):
+        team = alignment.team
+        category = alignment.category
         super().__init__(accent_color=team_colors[team])
         self.add_item(TextDisplay(f"## {team.name} {category} Roles"))
         action_row = ActionRow()
@@ -90,7 +92,7 @@ class CategoryContainer(Container):
                 action_row = ActionRow()
             padding = (max_name - len(role)) / 2
             action_row.add_item(SwitchButton(
-                RoleLayout(team, category, role, parent_view),
+                RoleLayout(alignment, role, parent_view),
                 f"\u200b{' ' * math.ceil(padding)}{role}{' ' * math.floor(padding)}\u200b"
             ))
         if len(action_row.children) > 0:
@@ -100,11 +102,10 @@ class CategoryContainer(Container):
 class CategoryLayout(LazyLayoutView):
     def __init__(self, alignment: AlignData, parent_view: LayoutView):
         super().__init__(parent_view)
-        self.team = alignment.team
-        self.category = alignment.category
+        self.alignment = alignment
 
     def _load_view(self):
-        self.add_item(CategoryContainer(self.team, self.category, self))
+        self.add_item(CategoryContainer(self.alignment, self))
         self.add_item(ActionRow(BackButton(self.parent_view)))
 
 # endregion
