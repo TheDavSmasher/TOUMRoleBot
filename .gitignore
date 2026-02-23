@@ -5,6 +5,7 @@
 .env
 
 # Specific Configs
+conf/
 **.cfg
 
 # Python initials
@@ -12,6 +13,9 @@ requirements.txt
 
 # Local Cache
 __pycache__/
+
+# Virtual Environment
+toum_env/
 
 # Running log
 nohup.out
