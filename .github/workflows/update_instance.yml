@@ -11,12 +11,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
-          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-          eval $(ssh-agent)
-          ssh-add - <<< "${{ secrets.DAV_HOST_PEM }}"
+      - name: Setup SSH keys
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.DAV_HOST_PEM }}
 
       - name: Update EC2
         uses: appleboy/ssh-action@v1.2.5
