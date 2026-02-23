@@ -24,7 +24,11 @@ jobs:
           key: ${{ secrets.DAV_HOST_PEM }}
           script: |
             cd ${{ github.event.repository.name }}
+
+            kill $(cat ${{ vars.MAIN_SCRIPT }}.pid)
+            rm -f ${{ vars.MAIN_SCRIPT }}.pid
+
             git pull git@github.com:${{ github.repository }}.git
             source toum_env/bin/activate
-            pgrep -f ${{ vars.MAIN_SCRIPT }} >/dev/null && pkill -f ${{ vars.MAIN_SCRIPT }} || true
-            TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3 ${{ vars.MAIN_SCRIPT }} &
+            TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3.13 ${{ vars.MAIN_SCRIPT }}.py &
+            echo $! > ${{ vars.MAIN_SCRIPT }}.pid
