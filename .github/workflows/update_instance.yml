@@ -30,5 +30,5 @@ jobs:
 
             git pull git@github.com:${{ github.repository }}.git
             source toum_env/bin/activate
-            TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3.13 ${{ vars.MAIN_SCRIPT }}.py &
+            TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3.13 ${{ vars.MAIN_SCRIPT }}.py > /dev/null 2>&1 < /dev/null &
             echo $! > ${{ vars.MAIN_SCRIPT }}.pid
