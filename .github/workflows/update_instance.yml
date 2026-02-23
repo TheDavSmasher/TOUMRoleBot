@@ -26,5 +26,5 @@ jobs:
             cd ${{ github.event.repository.name }}
             git pull git@github.com:${{ github.repository }}.git
             source toum_env/bin/activate
-            pkill -f ${{ vars.MAIN_SCRIPT }} || true
+            pgrep -f your_script_name >/dev/null && pkill -f your_script_name || true
             TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3 ${{ vars.MAIN_SCRIPT }} &
