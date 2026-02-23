@@ -9,3 +9,6 @@
 
 # Python initials
 requirements.txt
+
+# Local Cache
+__pycache__/
