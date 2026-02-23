@@ -12,3 +12,6 @@ requirements.txt
 
 # Local Cache
 __pycache__/
+
+# Running log
+nohup.out
