@@ -26,7 +26,7 @@ jobs:
           key: ${{ secrets.DAV_HOST_PEM }}
           script: |
             cd ${{ github.event.repository.name }}
-            git pull
+            git pull git@github.com:${{ github.repository }}.git
             source toum_env/bin/activate
             pkill -f ${{ vars.MAIN_SCRIPT }}
             TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3 ${{ vars.MAIN_SCRIPT }} &
