@@ -1,0 +1,26 @@
+name: update_instance.yml
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Update EC2
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.DAV_HOST_PEM }}
+          script: |
+            cd ${{ github.event.repository.name }}
+            git pull
+            source toum_env/bin/activate
+            pkill -f ${{ vars.MAIN_SCRIPT }}
+            TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3 ${{ vars.MAIN_SCRIPT }} &
+            cd ..
