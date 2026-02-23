@@ -25,7 +25,10 @@ jobs:
           script: |
             cd ${{ github.event.repository.name }}
             git pull git@github.com:${{ github.repository }}.git
+            echo "venv"
             source toum_env/bin/activate
+            echo "kill"
             pkill -f ${{ vars.MAIN_SCRIPT }}
+            echo "run new"
             TOKEN="${{ secrets.DISCORD_TOKEN }}" nohup python3 ${{ vars.MAIN_SCRIPT }} &
             cd ..
