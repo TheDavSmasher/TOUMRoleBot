@@ -17,5 +17,6 @@ __pycache__/
 # Virtual Environment
 toum_env/
 
-# Running log
+# Running Files
 nohup.out
+**.pid
