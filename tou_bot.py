@@ -7,8 +7,12 @@ from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, 
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guild_scheduled_events = True
+intents.guild_polls = True
 
-client = discord.Client(intents=intents)
+mentions = discord.AllowedMentions(everyone=True)
+
+client = discord.Client(intents=intents, allowed_mentions=mentions)
 tree = app_commands.CommandTree(client)
 
 
