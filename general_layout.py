@@ -31,8 +31,6 @@ class SwitchButton(Button):
         view = self.switch_view
         if isinstance(view, LazyLayoutView):
             view = view.load()
-        else:
-            view = self.switch_view
         await interaction.response.edit_message(
             view=view
         )
