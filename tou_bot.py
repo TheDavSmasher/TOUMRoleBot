@@ -2,17 +2,12 @@ import os
 import discord
 from discord import app_commands
 
+from bot_client import MongyClient
 from role_types import AlignData
 from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, RoleLayout
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.guild_scheduled_events = True
-intents.guild_polls = True
 
-mentions = discord.AllowedMentions(everyone=True)
-
-client = discord.Client(intents=intents, allowed_mentions=mentions)
+client = MongyClient()
 tree = app_commands.CommandTree(client)
 
 
