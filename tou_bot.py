@@ -65,6 +65,48 @@ async def find_role(interaction: discord.Interaction, role: str):
 
 
 @client.event
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    guild = client.get_guild(payload.guild_id)
+    if not guild:
+        return
+
+    member = guild.get_member(payload.user_id)
+    if not member:
+        return
+
+    emoji_role = await client.fetch_emoji_role(guild, payload.channel_id, payload.message_id)
+    if not emoji_role:
+        return
+
+    emoji, role = emoji_role
+    if str(payload.emoji) != emoji:
+        return
+
+    await member.add_roles(role)
+
+
+@client.event
+async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
+    guild = client.get_guild(payload.guild_id)
+    if not guild:
+        return
+
+    member = guild.get_member(payload.user_id)
+    if not member:
+        return
+
+    emoji_role = await client.fetch_emoji_role(guild, payload.channel_id, payload.message_id)
+    if not emoji_role:
+        return
+
+    emoji, role = emoji_role
+    if str(payload.emoji) != emoji:
+        return
+
+    await member.remove_roles(role)
+
+
+@client.event
 async def on_ready():
     await tree.sync()
 
