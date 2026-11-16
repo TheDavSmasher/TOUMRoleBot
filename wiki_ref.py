@@ -39,7 +39,7 @@ def fetch_all_roles() -> tuple[TeamCatRoles, RoleAlignment]:
     roles_dict: RoleAlignment = {}
     for team in roles_list.find_all("li", recursive=False):
         name = team.find_next("div")
-        name_str = str(name.next.next).removesuffix("s")
+        name_str = str(name.next.next.next).removesuffix("s")
         role_team = RoleTeam[name_str]
         team_dict[role_team] = {}
         for category in name.find_next("ul").find_all("li", recursive=False):
