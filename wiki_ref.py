@@ -81,6 +81,6 @@ def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:
         name.get_text(),
         desc.get_text(),
         overview.get_text(),
-        AlignData.from_str(align.get_text().replace("Alignment: ", "").strip()),
+        AlignData.from_str(align.get_text().replace("• Alignment: ", "").strip()),
         ab_list
     )
