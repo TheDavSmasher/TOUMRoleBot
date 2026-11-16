@@ -92,23 +92,11 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
 @client.event
 async def on_raw_poll_vote_add(payload: discord.RawPollVoteActionEvent):
-    guild = client.get_guild(payload.guild_id)
-    if not guild:
-        return
-
-    member = guild.get_member(payload.user_id)
+    member = client.get_guild_member(payload.guild_id, payload.user_id)
     if not member or member.bot:
         return
 
-    channel = guild.get_channel(payload.channel_id)
-    if not channel:
-        return
-
-    message = await channel.fetch_message(payload.message_id)
-    if not message:
-        return
-
-    answer = message.poll.get_answer(payload.answer_id)
+    answer = await client.get_poll_answer(payload.guild_id, payload.channel_id, payload.message_id, payload.answer_id)
     if not answer:
         return
 
@@ -117,23 +105,11 @@ async def on_raw_poll_vote_add(payload: discord.RawPollVoteActionEvent):
 
 @client.event
 async def on_raw_poll_vote_remove(payload: discord.RawPollVoteActionEvent):
-    guild = client.get_guild(payload.guild_id)
-    if not guild:
-        return
-
-    member = guild.get_member(payload.user_id)
+    member = client.get_guild_member(payload.guild_id, payload.user_id)
     if not member or member.bot:
         return
 
-    channel = guild.get_channel(payload.channel_id)
-    if not channel:
-        return
-
-    message = await channel.fetch_message(payload.message_id)
-    if not message:
-        return
-
-    answer = message.poll.get_answer(payload.answer_id)
+    answer = await client.get_poll_answer(payload.guild_id, payload.channel_id, payload.message_id, payload.answer_id)
     if not answer:
         return
 
@@ -142,15 +118,11 @@ async def on_raw_poll_vote_remove(payload: discord.RawPollVoteActionEvent):
 
 @client.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    guild = client.get_guild(payload.guild_id)
-    if not guild:
-        return
-
-    member = guild.get_member(payload.user_id)
+    member = client.get_guild_member(payload.guild_id, payload.user_id)
     if not member:
         return
 
-    emoji_role = await client.fetch_emoji_role(guild, payload.channel_id, payload.message_id)
+    emoji_role = await client.fetch_emoji_role(payload.guild_id, payload.channel_id, payload.message_id)
     if not emoji_role:
         return
 
@@ -163,15 +135,11 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
 @client.event
 async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
-    guild = client.get_guild(payload.guild_id)
-    if not guild:
-        return
-
-    member = guild.get_member(payload.user_id)
+    member = client.get_guild_member(payload.guild_id, payload.user_id)
     if not member:
         return
 
-    emoji_role = await client.fetch_emoji_role(guild, payload.channel_id, payload.message_id)
+    emoji_role = await client.fetch_emoji_role(payload.guild_id, payload.channel_id, payload.message_id)
     if not emoji_role:
         return
 
