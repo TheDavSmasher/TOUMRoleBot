@@ -14,9 +14,6 @@ class MongyClient(discord.Client):
     # (Guild ID, Channel ID, Message ID) -> Message
     _message_cache: dict[tuple[int, int, int], discord.Message | None] = {}
 
-    # (Guild ID, Channel ID, Message ID, Answer ID -> PollAnswer
-    _poll_answer_cache: dict[tuple[int, int, int, int], discord.PollAnswer] = {}
-
     # (Channel ID, Message ID) -> (Emoji, Role ID)
     _role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
 
@@ -71,8 +68,7 @@ class MongyClient(discord.Client):
         return self._message_cache.get((guild_id, channel_id, message_id))
 
     async def get_poll_answer(self, guild_id: int, channel_id: int, message_id: int, answer_id: int, /) -> discord.PollAnswer | None:
-        if (guild_id, channel_id, message_id, answer_id) not in self._poll_answer_cache:
-            if (message := await self.get_guild_message(guild_id, channel_id, message_id)) is not None and message.poll:
-                self._poll_answer_cache[(guild_id, channel_id, message_id, answer_id)] = message.poll.get_answer(answer_id)
+        if (message := await self.get_guild_message(guild_id, channel_id, message_id)) is None or message.poll is None:
+            return None
 
-        return self._poll_answer_cache.get((guild_id, channel_id, message_id, answer_id))
+        return message.poll.get_poll_answer(answer_id)
