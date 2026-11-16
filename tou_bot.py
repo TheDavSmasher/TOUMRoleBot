@@ -85,7 +85,7 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     poll.add_answer(text="Not this week")
 
     await interaction.response.send_message(
-        content=interaction.guild.default_role.mention if ping else None,
+        content="@everyone" if ping else None,
         poll=poll
     )
 
