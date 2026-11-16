@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 import discord
 from discord import app_commands
 
@@ -61,6 +63,30 @@ async def find_role(interaction: discord.Interaction, role: str):
     await interaction.response.send_message(
         view=RoleLayout(AlignData.from_str(align), name).load(),
         ephemeral=True
+    )
+
+
+@tree.command(name="session_poll", description="Create a poll for session attendance.")
+@app_commands.describe(ping="Ping @everyone")
+async def host_session_poll(interaction: discord.Interaction, ping: bool):
+    poll = discord.Poll(
+        question="Days for Session",
+        duration=timedelta(days=3),
+        multiple=True
+    )
+
+    poll.add_answer(text="Monday")
+    poll.add_answer(text="Tuesday")
+    poll.add_answer(text="Wednesday")
+    poll.add_answer(text="Thursday")
+    poll.add_answer(text="Friday")
+    poll.add_answer(text="Saturday")
+    poll.add_answer(text="Unsure")
+    poll.add_answer(text="Not this week")
+
+    await interaction.response.send_message(
+        content=interaction.guild.default_role.mention if ping else None,
+        poll=poll
     )
 
 
