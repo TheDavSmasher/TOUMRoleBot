@@ -91,3 +91,8 @@ def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:
         AlignData.from_str(align.get_text().replace("• Alignment: ", "").strip()),
         ab_list
     )
+
+
+def get_role_hyperlink(data: RoleDesc) -> str:
+    return f"[{data.name}]({WIKI_URL.format(path=ROLE_URL.format(
+        team=data.alignment.team.name.lower(), al_type=data.alignment.category.lower(), role=data.name))})"

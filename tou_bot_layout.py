@@ -6,7 +6,7 @@ from discord import SelectOption
 
 from config_reader import load_config, active_config_roles
 from role_types import TeamCatRoles, RoleTeam, RoleDesc, AlignData, RoleAlignment
-from wiki_ref import fetch_all_roles, get_role_desc, IMAGE_URL
+from wiki_ref import fetch_all_roles, get_role_desc, get_role_hyperlink, IMAGE_URL
 from general_layout import BackButton, SwitchButton, LazyLayoutView, best_row_length
 
 
@@ -70,7 +70,7 @@ class RoleContainer(Container):
     def __init__(self, data: RoleDesc):
         super().__init__(accent_color=team_colors[data.alignment.team])
         self.add_item(Section(
-            TextDisplay(f'## {data.name}'),
+            TextDisplay(f'## {get_role_hyperlink(data)}'),
             TextDisplay(f'### {data.description}'),
             TextDisplay(f"**Alignment: {data.alignment}**"),
             accessory=Thumbnail(IMAGE_URL.format(icon=data.name)),
