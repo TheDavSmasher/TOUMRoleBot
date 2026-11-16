@@ -2,18 +2,6 @@ import discord
 
 
 class MongyClient(discord.Client):
-    # Guild ID -> Guild
-    _guild_cache: dict[int, discord.Guild | None] = {}
-
-    # (Guild ID, User ID) -> Member
-    _member_cache: dict[tuple[int, int], discord.Member | None] = {}
-
-    # (Guild ID, Channel ID) -> Channel
-    _channel_cache: dict[tuple[int, int], discord.abc.Messageable | None] = {}
-
-    # (Guild ID, Channel ID, Message ID) -> Message
-    _message_cache: dict[tuple[int, int, int], discord.Message | None] = {}
-
     # (Channel ID, Message ID) -> (Emoji, Role ID)
     _role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
 
@@ -40,11 +28,19 @@ class MongyClient(discord.Client):
             return None
         return None
 
+    # region Cache
+
+    # Guild ID -> Guild
+    _guild_cache: dict[int, discord.Guild | None] = {}
+
     def get_guild(self, guild_id: int, /) -> discord.Guild | None:
         if guild_id not in self._guild_cache:
             self._guild_cache[guild_id] = super().get_guild(guild_id)
 
         return self._guild_cache.get(guild_id)
+
+    # (Guild ID, User ID) -> Member
+    _member_cache: dict[tuple[int, int], discord.Member | None] = {}
 
     def get_guild_member(self, guild_id: int, member_id: int, /) -> discord.Member | None:
         if (guild_id, member_id) not in self._member_cache:
@@ -53,6 +49,9 @@ class MongyClient(discord.Client):
 
         return self._member_cache.get((guild_id, member_id))
 
+    # (Guild ID, Channel ID) -> Channel
+    _channel_cache: dict[tuple[int, int], discord.abc.Messageable | None] = {}
+
     def get_guild_channel(self, guild_id: int, channel_id: int, /) -> discord.abc.Messageable | None:
         if (guild_id, channel_id) not in self._channel_cache:
             if (guild := self.get_guild(guild_id)) is not None:
@@ -60,12 +59,17 @@ class MongyClient(discord.Client):
 
         return self._channel_cache.get((guild_id, channel_id))
 
+    # (Guild ID, Channel ID, Message ID) -> Message
+    _message_cache: dict[tuple[int, int, int], discord.Message | None] = {}
+
     async def get_guild_message(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Message | None:
         if (guild_id, channel_id, message_id) not in self._message_cache:
             if (channel := self.get_guild_channel(guild_id, channel_id)) is not None:
                 self._message_cache[(guild_id, channel_id, message_id)] = await channel.fetch_message(message_id)
 
         return self._message_cache.get((guild_id, channel_id, message_id))
+
+    # endregion
 
     async def get_poll_answer(self, guild_id: int, channel_id: int, message_id: int, answer_id: int, /) -> discord.PollAnswer | None:
         if (message := await self.get_guild_message(guild_id, channel_id, message_id)) is None or message.poll is None:

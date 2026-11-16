@@ -13,6 +13,10 @@ client = MongyClient()
 tree = app_commands.CommandTree(client)
 
 
+# region Commands
+
+# region Role Commands
+
 @tree.command(name="active_roles", description="View the currently active roles.")
 async def active_roles(interaction: discord.Interaction):
     filtered(True)
@@ -65,6 +69,8 @@ async def find_role(interaction: discord.Interaction, role: str):
         ephemeral=True
     )
 
+# endregion
+
 
 @tree.command(name="session_poll", description="Create a poll for session attendance.")
 @app_commands.describe(ping="Ping @everyone")
@@ -89,6 +95,10 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
         poll=poll
     )
 
+# endregion
+
+
+# region Client Events
 
 @client.event
 async def on_raw_poll_vote_add(payload: discord.RawPollVoteActionEvent):
@@ -153,6 +163,8 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 @client.event
 async def on_ready():
     await tree.sync()
+
+# endregion
 
 
 if __name__ == "__main__":
