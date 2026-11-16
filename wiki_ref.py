@@ -22,7 +22,7 @@ def fetch_url_soup(path: str, name: str, att_class: str) -> BeautifulSoup:
         raise requests.exceptions.HTTPError(f"Failed to retrieve page.\nStatus code: {response.status_code}\nURL: {url}")
 
     html_content = response.text
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(html_content, 'lxml')
 
     element = soup.find(name, {"class": att_class})
 
