@@ -52,16 +52,23 @@ def fetch_all_roles() -> tuple[TeamCatRoles, RoleAlignment]:
 
 
 def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:
-    role_info = fetch_url_soup(ROLE_URL.format(team=team.name.lower(), al_type=al_type, role=role),
+    role_page = fetch_url_soup(ROLE_URL.format(team=team.name.lower(), al_type=al_type, role=role),
                                "div", "theme-doc-markdown markdown")
 
-    name = role_info.find_next("h1")
-    desc = role_info.find_next("h3")
-    align = role_info.find_next("h4")
-    overview = role_info.find_next("p")
+    name = role_page.find_next("header")
+
+    role_info = role_page.find_next("div", {"class": "role-info"})
+
+    desc = role_info.find_next("div", {"class": "role-tagline"})
+    align = role_info.find_next("div", {"class": "role-alignment"})
+
+    overview = ""
+    for p in role_info.find_all("p", recursive=False):
+        overview = overview + p.get_text() + "\n"
+    overview.rstrip()
 
     ab_list: list[RoleAbility] = []
-    next_table = overview
+    next_table = role_page
     while next_table := next_table.find_next("table"):
         if next_table.find_next("th").get_text() != "Button":
             continue
@@ -80,7 +87,7 @@ def get_role_desc(team: RoleTeam, al_type: str, role: str) -> RoleDesc:
     return RoleDesc(
         name.get_text(),
         desc.get_text(),
-        overview.get_text(),
+        overview,
         AlignData.from_str(align.get_text().replace("• Alignment: ", "").strip()),
         ab_list
     )
