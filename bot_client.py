@@ -69,13 +69,18 @@ class MongyClient(discord.Client):
 
         return self._message_cache.get((guild_id, channel_id, message_id))
 
+    # (Guild ID, Channel ID, Message ID) -> Poll
+    _bot_poll_cache: dict[tuple[int, int, int], discord.Poll | None] = {}
+
+    async def get_bot_poll(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Poll | None:
+        if (guild_id, channel_id, message_id) not in self._bot_poll_cache:
+            message = await self.get_guild_message(guild_id, channel_id, message_id)
+            if message is not None and message.author == self.user and message.poll is not None:
+                self._bot_poll_cache[(guild_id, channel_id, message_id)] = message.poll
+
+        return self._bot_poll_cache.get((guild_id, channel_id, message_id))
+
     # endregion
-
-    async def get_poll_answer(self, guild_id: int, channel_id: int, message_id: int, answer_id: int, /) -> discord.PollAnswer | None:
-        if (message := await self.get_guild_message(guild_id, channel_id, message_id)) is None or message.poll is None:
-            return None
-
-        return message.poll.get_poll_answer(answer_id)
 
     # region Events
 
@@ -95,5 +100,35 @@ class MongyClient(discord.Client):
         guild_id, channel_id = payload.guild_id, payload.channel_id
         for message_id in payload.message_ids:
             self._message_cache.pop((guild_id, channel_id, message_id), None)
+
+    async def on_raw_poll_vote_add(self, payload: discord.RawPollVoteActionEvent):
+        member = self.get_guild_member(payload.guild_id, payload.user_id)
+        if not member or member.bot:
+            return
+
+        poll = await self.get_bot_poll(payload.guild_id, payload.channel_id, payload.message_id)
+        if not poll:
+            return
+
+        answer = poll.get_answer(payload.answer_id)
+        if not answer:
+            return
+
+        print(f"{member.name} voted for '{answer.text}' in poll: '{poll.question}'")
+
+    async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
+        member = self.get_guild_member(payload.guild_id, payload.user_id)
+        if not member or member.bot:
+            return
+
+        poll = await self.get_bot_poll(payload.guild_id, payload.channel_id, payload.message_id)
+        if not poll:
+            return
+
+        answer = poll.get_answer(payload.answer_id)
+        if not answer:
+            return
+
+        print(f"{member.name} removed their vote for '{answer.text}' in poll: '{poll.question}'")
 
     # endregion

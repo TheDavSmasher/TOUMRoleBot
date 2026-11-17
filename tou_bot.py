@@ -101,32 +101,6 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 # region Client Events
 
 @client.event
-async def on_raw_poll_vote_add(payload: discord.RawPollVoteActionEvent):
-    member = client.get_guild_member(payload.guild_id, payload.user_id)
-    if not member or member.bot:
-        return
-
-    answer = await client.get_poll_answer(payload.guild_id, payload.channel_id, payload.message_id, payload.answer_id)
-    if not answer:
-        return
-
-    print(f"{member.name} voted for '{answer.text}' in poll: '{answer.poll.question}'")
-
-
-@client.event
-async def on_raw_poll_vote_remove(payload: discord.RawPollVoteActionEvent):
-    member = client.get_guild_member(payload.guild_id, payload.user_id)
-    if not member or member.bot:
-        return
-
-    answer = await client.get_poll_answer(payload.guild_id, payload.channel_id, payload.message_id, payload.answer_id)
-    if not answer:
-        return
-
-    print(f"{member.name} removed their vote for '{answer.text}' in poll: '{answer.poll.question}'")
-
-
-@client.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     member = client.get_guild_member(payload.guild_id, payload.user_id)
     if not member:
