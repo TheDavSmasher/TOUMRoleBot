@@ -314,3 +314,4 @@ class MongyClient(discord.Client):
     def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
         self._message_cache.pop((guild_id, channel_id, message_id), None)
         self._react_role_dict.pop((channel_id, message_id), None)
+        self._poll_votes.pop((guild_id, channel_id, message_id), None)
