@@ -138,6 +138,10 @@ class MongyClient(discord.Client):
 
         self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role)
 
+        track_log = self._get_poll_track_log(message, role)
+        track_message = await self._log_level(message.guild.id, track_log, "POLL")
+        self.cache_sent_message(track_message)
+
     async def get_tracked_poll(self, guild_id: int, channel_id: int, message_id: int) -> PollVotes | None:
         if (guild_id, channel_id, message_id) not in self._poll_votes:
             message = await self.get_bot_message(guild_id, channel_id, message_id)
@@ -147,6 +151,13 @@ class MongyClient(discord.Client):
                 self._poll_votes[(guild_id, channel_id, message_id)] = (user_ids, role)
 
         return self._poll_votes.get((guild_id, channel_id, message_id))
+
+    def _get_poll_track_log(self, message: discord.Message, role: discord.Role | None) -> str:
+        members = role.members if role else message.channel.members
+        total_members = len(members)
+        if self.user in members:
+            total_members = total_members - 1
+        return f"Tracking session poll in {message.jump_url}:\n\n **Votes:** 0/{total_members}"
 
     # endregion
 
