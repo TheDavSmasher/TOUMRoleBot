@@ -5,6 +5,8 @@ import discord
 REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
 REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
+BOT_LOG_CHANNEL_ID = 1571966492600180876
+
 
 class MongyClient(discord.Client):
     def __init__(self):
@@ -163,3 +165,17 @@ class MongyClient(discord.Client):
     def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
         self._message_cache.pop((guild_id, channel_id, message_id), None)
         self._react_role_dict.pop((channel_id, message_id), None)
+
+    # region Logging
+
+    async def info(self, guild_id: int, content: str):
+        await self._log_level(guild_id, content, "INFO")
+
+    async def error(self, guild_id: int, content: str):
+        await self._log_level(guild_id, content, "ERROR")
+
+    async def _log_level(self, guild_id: int, content: str, level: str):
+        channel = self.get_guild_channel(guild_id, BOT_LOG_CHANNEL_ID)
+        await channel.send(f"[{level}] {content}")
+
+    # endregion

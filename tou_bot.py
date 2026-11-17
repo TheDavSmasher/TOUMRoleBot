@@ -113,10 +113,7 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
         allowed_mentions=discord.AllowedMentions(everyone=True)
     )
 
-    await interaction.response.send_message(
-        content="Poll created successfully",
-        ephemeral=True
-    )
+    await client.info(interaction.guild_id, "Poll created successfully")
 
 
 @tree.command(name="register_emoji_role", description="Register an message with an emoji and a role in the server.")
@@ -131,18 +128,12 @@ async def register_emoji_role(
 
     await client.register_react_role(channel, str(emoji), role, desc)
 
-    await interaction.response.send_message(
-        content="Registered emoji and role successfully",
-        ephemeral=True
-    )
+    await client.info(interaction.guild_id, "Registered emoji and role successfully")
 
 
 @register_emoji_role.error
 async def register_emoji_role_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    await interaction.response.send_message(
-        content=f"An error occurred while registering an emoji role: {error}",
-        ephemeral=True
-    )
+    await client.error(interaction.guild_id, f"An error occurred while registering an emoji role: {error}")
 
 # endregion
 
@@ -165,6 +156,8 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
     await member.add_roles(role)
 
+    await client.info(payload.guild_id, f"Added {role.name} role to {member.name}.")
+
 
 @client.event
 async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
@@ -181,6 +174,8 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
         return
 
     await member.remove_roles(role)
+
+    await client.info(payload.guild_id, f"Removed {role.name} role from {member.name}.")
 
 
 @client.event
