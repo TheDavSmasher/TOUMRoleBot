@@ -217,9 +217,8 @@ class MongyClient(discord.Client):
     # endregion
 
     # region Logging
-
-    def _logging_channel(self, guild_id: int):
-        return self.get_guild_channel(guild_id, BOT_LOG_CHANNEL_ID)
+    def _logging_channel_id(self, guild_id: int):
+        return BOT_LOG_CHANNEL_ID
 
     async def info(self, guild_id: int, content: str):
         await self._log_level(guild_id, content, "INFO")
@@ -228,7 +227,8 @@ class MongyClient(discord.Client):
         await self._log_level(guild_id, content, "ERROR")
 
     async def _log_level(self, guild_id: int, content: str, level: str):
-        return await self._logging_channel(guild_id).send(f"[{level}] {content}", allowed_mentions=discord.AllowedMentions.none())
+        channel = self.get_guild_channel(guild_id, self._logging_channel_id(guild_id))
+        return await channel.send(f"[{level}] {content}", allowed_mentions=discord.AllowedMentions.none())
 
     # endregion
 
