@@ -110,7 +110,7 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     message = await channel.send(
         content=role.mention if role else None,
         poll=poll,
-        allowed_mentions=discord.AllowedMentions(everyone=True)
+        allowed_mentions=discord.AllowedMentions(roles=True)
     )
 
     client.cache_sent_message(message)
