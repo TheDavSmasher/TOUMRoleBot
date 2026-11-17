@@ -78,7 +78,9 @@ class MongyClient(discord.Client):
 
         if (guild_id, user_id) not in self._member_cache:
             if (guild := self.get_guild(guild_id)) is not None:
-                self._member_cache[(guild_id, user_id)] = guild.get_member(user_id)
+                member = guild.get_member(user_id)
+                if member is not None and not member.bot:
+                    self._member_cache[(guild_id, user_id)] = member
 
         return self._member_cache.get((guild_id, user_id))
 
@@ -126,7 +128,7 @@ class MongyClient(discord.Client):
 
     async def on_raw_poll_vote_add(self, payload: discord.RawPollVoteActionEvent):
         member = self.get_guild_member(payload.guild_id, payload.user_id)
-        if not member or member.bot:
+        if not member:
             return
 
         message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
@@ -141,7 +143,7 @@ class MongyClient(discord.Client):
 
     async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
         member = self.get_guild_member(payload.guild_id, payload.user_id)
-        if not member or member.bot:
+        if not member:
             return
 
         message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
