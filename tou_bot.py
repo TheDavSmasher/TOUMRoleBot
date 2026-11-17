@@ -13,6 +13,8 @@ from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, 
 SERVER_ROLES_CHANNEL_ID = 1524624589232017569
 SESSION_PLANNING_CHANNEL_ID = 1470829176066937057
 
+TEST_CHANNEL_ID = 1572055173864362145
+
 
 client = MongyClient()
 tree = app_commands.CommandTree(client)
