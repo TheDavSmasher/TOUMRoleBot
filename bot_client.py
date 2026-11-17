@@ -133,7 +133,9 @@ class MongyClient(discord.Client):
     # (Guild ID, Channel ID, Message ID) -> (User IDs, Optional[Role])
     _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
 
-    def track_poll(self, message: discord.Message, role: discord.Role | None = None):
+    async def track_poll(self, message: discord.Message, role: discord.Role | None = None):
+        self.cache_sent_message(message)
+
         self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role)
 
     async def get_tracked_poll(self, guild_id: int, channel_id: int, message_id: int) -> PollVotes | None:
