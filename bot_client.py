@@ -43,7 +43,7 @@ class MongyClient(discord.Client):
     async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role, desc: str | None = None):
         content = EMOJI_ROLE_FORMAT.format(emoji=emoji, role=role.mention)
         if desc is not None:
-            content += "\n" + desc
+            content += "\n\n" + desc
 
         message: discord.Message | None = None
         try:
