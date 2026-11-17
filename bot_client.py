@@ -5,7 +5,7 @@ import discord
 REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
 REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
-POLL_TRACK_FORMAT = "Tracking session poll in {jump_url}:\n\n **Votes:** 0/{total_members}"
+POLL_TRACK_FORMAT = "[POLL] Tracking session poll in {jump_url}:\n\n **Votes:** 0/{total_members}"
 
 LOG_MESSAGE_MATCH = re.compile(r"\[(\w+)]\s+.+")
 
@@ -141,8 +141,10 @@ class MongyClient(discord.Client):
 
         self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role)
 
+        guild_id = message.guild.id
         track_log = self._get_poll_track_log(message, role)
-        track_message = await self._log_level(message.guild.id, track_log, "POLL")
+        log_channel = self.get_guild_channel(guild_id, self._logging_channel_id(guild_id))
+        track_message = await log_channel.send(content=track_log)
         self.cache_sent_message(track_message)
 
     async def get_tracked_poll(self, guild_id: int, channel_id: int, message_id: int) -> PollVotes | None:
