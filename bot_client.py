@@ -7,8 +7,8 @@ REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=
 
 MESSAGE_URL_RE = r"https://discord.com/channels/(\d+)/(\d+)/(\d+)"
 
-POLL_TRACK_FORMAT = "[POLL] Tracking session poll in {jump_url}:\n\n **Votes:** 0/{total_members}"
-POLL_TRACK_MATCH = re.compile(re.escape(POLL_TRACK_FORMAT.format(jump_url=MESSAGE_URL_RE, total_members=r"\d+")))
+POLL_TRACK_FORMAT = "[POLL] Tracking session poll in {jump_url}:\n\n **Votes:** {count}/{total_members}"
+POLL_TRACK_MATCH = re.compile(fr"\[POLL] Tracking session poll in {MESSAGE_URL_RE}:\s+\*\*Votes:\*\*\s+\d+/\d+")
 
 LOG_MESSAGE_MATCH = re.compile(r"\[(\w+)]\s+.+")
 
@@ -157,7 +157,7 @@ class MongyClient(discord.Client):
         self.cache_sent_message(message)
 
         guild_id = message.guild.id
-        track_log = self._get_poll_track_log(message, role)
+        track_log = self._get_poll_track_log(message, role, 0)
         log_channel = self.get_guild_channel(guild_id, self._logging_channel_id(guild_id))
         track_message = await log_channel.send(content=track_log)
         self.cache_sent_message(track_message)
@@ -176,8 +176,9 @@ class MongyClient(discord.Client):
 
         return self._poll_votes.get((guild_id, channel_id, message_id))
 
-    async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, track_id: int,
-                                     role: discord.Role | None):
+    async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, votes: PollVotes):
+        user_ids, role, track_id = votes
+
         track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, track_id)
         if not track_message:
             return
@@ -186,7 +187,7 @@ class MongyClient(discord.Client):
         if not message:
             return
 
-        track_log = self._get_poll_track_log(message, role)
+        track_log = self._get_poll_track_log(message, role, len(user_ids))
         await track_message.edit(content=track_log)
 
     async def _get_poll_track_message(self, guild_id: int, channel_id: int, message_id: int, track_id: int | None) -> discord.Message | None:
@@ -209,13 +210,13 @@ class MongyClient(discord.Client):
 
         return None
 
-    def _get_poll_track_log(self, message: discord.Message, role: discord.Role | None) -> str:
+    def _get_poll_track_log(self, message: discord.Message, role: discord.Role | None, count: int) -> str:
         members = role.members if role else message.channel.members
         total_members = len(members)
         if self.user in members:
             total_members = total_members - 1
 
-        return POLL_TRACK_FORMAT.format(jump_url=message.jump_url, total_members=total_members)
+        return POLL_TRACK_FORMAT.format(jump_url=message.jump_url, count=count, total_members=total_members)
 
     # endregion
 
@@ -245,7 +246,7 @@ class MongyClient(discord.Client):
         if not poll_votes:
             return
 
-        user_ids, role, track_id = poll_votes
+        user_ids, role, _ = poll_votes
 
         if user_id in user_ids:
             return
@@ -259,7 +260,7 @@ class MongyClient(discord.Client):
 
         user_ids.add(user_id)
 
-        await self._update_poll_track_log(guild_id, channel_id, message_id, track_id, role)
+        await self._update_poll_track_log(guild_id, channel_id, message_id, poll_votes)
 
     async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
         guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
@@ -268,11 +269,9 @@ class MongyClient(discord.Client):
         if not poll_votes:
             return
 
-        user_ids, role, track_id = poll_votes
+        poll_votes[0].discard(user_id)
 
-        user_ids.discard(user_id)
-
-        await self._update_poll_track_log(guild_id, channel_id, message_id, track_id, role)
+        await self._update_poll_track_log(guild_id, channel_id, message_id, poll_votes)
 
     # endregion
 
