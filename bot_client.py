@@ -171,13 +171,13 @@ class MongyClient(discord.Client):
         if (guild_id, channel_id, message_id) not in self._poll_votes:
             message = await self.get_bot_message(guild_id, channel_id, message_id)
             if message is not None and message.poll:
-                role = message.role_mentions[0] if message.role_mentions else None
-                user_ids = await _get_poll_votes(message.poll, role)
                 track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, None)
-                track_id = track_message.id if track_message else -1
+                if track_message is not None:
+                    role = message.role_mentions[0] if message.role_mentions else None
+                    user_ids = await _get_poll_votes(message.poll, role)
 
-                update = True
-                result = (user_ids, role, track_id, True)
+                    update = True
+                    result = (user_ids, role, track_message.id, True)
         else:
             votes = self._poll_votes[(guild_id, channel_id, message_id)]
             if votes[3]:
@@ -206,9 +206,6 @@ class MongyClient(discord.Client):
         await track_message.edit(content=track_log)
 
     async def _get_poll_track_message(self, guild_id: int, channel_id: int, message_id: int, track_id: int | None) -> discord.Message | None:
-        if track_id is not None and track_id == -1:
-            return None
-
         log_channel_id = self._logging_channel_id(guild_id)
 
         if track_id is not None:
