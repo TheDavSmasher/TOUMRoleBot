@@ -76,3 +76,24 @@ class MongyClient(discord.Client):
             return None
 
         return message.poll.get_poll_answer(answer_id)
+
+    # region Events
+
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
+        guild_id, channel_id, message_id = payload.guild_id, payload.channel_id, payload.message_id
+        if (guild_id, channel_id, message_id) not in self._message_cache:
+            return
+
+        channel = self.get_guild_channel(guild_id, channel_id)
+        self._message_cache[(guild_id, channel_id, message_id)] = await channel.fetch_message(message_id)
+
+    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
+        guild_id, channel_id, message_id = payload.guild_id, payload.channel_id, payload.message_id
+        self._message_cache.pop((guild_id, channel_id, message_id), None)
+
+    async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
+        guild_id, channel_id = payload.guild_id, payload.channel_id
+        for message_id in payload.message_ids:
+            self._message_cache.pop((guild_id, channel_id, message_id), None)
+
+    # endregion
