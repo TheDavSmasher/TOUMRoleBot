@@ -147,8 +147,8 @@ class MongyClient(discord.Client):
 
     # region Poll Tracking
 
-    # (User IDs, Optional[Role], Tracking Message ID)
-    PollVotes = tuple[set[int], discord.Role | None, int]
+    # (User IDs, Optional[Role], Tracking Message ID, Just Fetched)
+    PollVotes = tuple[set[int], discord.Role | None, int, bool]
 
     # (Guild ID, Channel ID, Message ID) -> PollVotes
     _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
@@ -162,9 +162,12 @@ class MongyClient(discord.Client):
         track_message = await log_channel.send(content=track_log)
         self.cache_sent_message(track_message)
 
-        self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role, track_message.id)
+        self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role, track_message.id, False)
 
     async def get_tracked_poll(self, guild_id: int, channel_id: int, message_id: int) -> PollVotes | None:
+        update = False
+        result = None
+
         if (guild_id, channel_id, message_id) not in self._poll_votes:
             message = await self.get_bot_message(guild_id, channel_id, message_id)
             if message is not None and message.poll:
@@ -172,12 +175,24 @@ class MongyClient(discord.Client):
                 user_ids = await _get_poll_votes(message.poll, role)
                 track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, None)
                 track_id = track_message.id if track_message else -1
-                self._poll_votes[(guild_id, channel_id, message_id)] = (user_ids, role, track_id)
 
-        return self._poll_votes.get((guild_id, channel_id, message_id))
+                update = True
+                result = (user_ids, role, track_id, True)
+        else:
+            votes = self._poll_votes[(guild_id, channel_id, message_id)]
+            if votes[3]:
+                update = True
+                result = (votes[0], votes[1], votes[2], False)
+            else:
+                result = votes
+
+        if result and update:
+            self._poll_votes[(guild_id, channel_id, message_id)] = result
+
+        return result
 
     async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, votes: PollVotes):
-        user_ids, role, track_id = votes
+        user_ids, role, track_id, _ = votes
 
         track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, track_id)
         if not track_message:
@@ -246,9 +261,9 @@ class MongyClient(discord.Client):
         if not poll_votes:
             return
 
-        user_ids, role, _ = poll_votes
+        user_ids, role, _, just_fetched = poll_votes
 
-        if user_id in user_ids:
+        if not just_fetched and user_id in user_ids:
             return
 
         member = self.get_guild_member(guild_id, user_id)
@@ -267,6 +282,11 @@ class MongyClient(discord.Client):
 
         poll_votes = await self.get_tracked_poll(guild_id, channel_id, message_id)
         if not poll_votes:
+            return
+
+        user_ids, _, _, just_fetched = poll_votes
+
+        if not just_fetched and user_id not in user_ids:
             return
 
         poll_votes[0].discard(user_id)
