@@ -33,6 +33,8 @@ class MongyClient(discord.Client):
         if message is None or (match := EMOJI_ROLE_MATCH.match(message.content)) is None:
             return None
 
+        self._remove_message_cache(guild_id, channel_id, message_id)
+
         emoji = match.group(1)
         role_id = int(match.group(2))
         role = message.guild.get_role(role_id)
