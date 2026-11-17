@@ -5,6 +5,8 @@ import discord
 REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
 REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
+LOG_MESSAGE_MATCH = re.compile(r"\[(?:INFO|ERROR)]\s+.+")
+
 BOT_LOG_CHANNEL_ID = 1571966492600180876
 
 
@@ -104,7 +106,8 @@ class MongyClient(discord.Client):
     async def get_bot_message(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Message | None:
         if (guild_id, channel_id, message_id) not in self._message_cache:
             if (channel := self.get_guild_channel(guild_id, channel_id)) is not None:
-                if (message := await channel.fetch_message(message_id)) is not None and message.author == self.user:
+                message = await channel.fetch_message(message_id)
+                if message is not None and message.author == self.user and not LOG_MESSAGE_MATCH.match(message.content):
                     self._message_cache[(guild_id, channel_id, message_id)] = message
 
         return self._message_cache.get((guild_id, channel_id, message_id))
