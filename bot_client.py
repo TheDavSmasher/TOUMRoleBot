@@ -135,7 +135,10 @@ class MongyClient(discord.Client):
                 message = await channel.fetch_message(message_id)
                 if message is not None and message.author == self.user:
                     log_match = LOG_MESSAGE_MATCH.match(message.content)
-                    if log_match is None or log_match.group(1) not in ("INFO", "ERROR"):
+                    poll_match = POLL_TRACK_MATCH.match(message.content)
+                    if (log_match is None or log_match.group(1) not in ("INFO", "ERROR") or
+                            (poll_match is not None and
+                             self.get_bot_message(poll_match.group(1), poll_match.group(2), poll_match.group(3)))):
                         self._message_cache[(guild_id, channel_id, message_id)] = message
 
         return self._message_cache.get((guild_id, channel_id, message_id))
