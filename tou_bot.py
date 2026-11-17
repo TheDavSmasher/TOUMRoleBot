@@ -118,23 +118,23 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     client.track_poll(poll, role)
 
 
-@tree.command(name="register_emoji_role", description="Register an message with an emoji and a role in the server.")
-@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will use.", desc="Describe what the role does.")
-async def register_emoji_role(
+@tree.command(name="register_react_role", description="Register an message with an emoji reaction to give out a role in the server.")
+@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will expect in a reaction.", desc="Describe what the role does.")
+async def register_react_role(
     interaction: discord.Interaction,
     role: discord.Role,
-    emoji: app_commands.Transform[discord.PartialEmoji | str, EmojiTransformer],
+    react_emoji: app_commands.Transform[discord.PartialEmoji | str, EmojiTransformer],
     desc: str | None = None
 ):
     channel = client.get_guild_channel(interaction.guild_id, SERVER_ROLES_CHANNEL_ID)
 
-    await client.register_react_role(channel, str(emoji), role, desc)
+    await client.register_react_role(channel, str(react_emoji), role, desc)
 
-    await client.info(interaction.guild_id, f"Registered emoji {emoji} and role {role.mention} successfully")
+    await client.info(interaction.guild_id, f"Registered emoji {react_emoji} and role {role.mention} successfully")
 
 
-@register_emoji_role.error
-async def register_emoji_role_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+@register_react_role.error
+async def register_react_role_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     await client.error(interaction.guild_id, f"An error occurred while registering an emoji role: {error}")
 
 # endregion
