@@ -168,10 +168,6 @@ class MongyClient(discord.Client):
 
     # endregion
 
-    def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
-        self._message_cache.pop((guild_id, channel_id, message_id), None)
-        self._react_role_dict.pop((channel_id, message_id), None)
-
     # region Logging
 
     async def info(self, guild_id: int, content: str):
@@ -185,3 +181,7 @@ class MongyClient(discord.Client):
         await channel.send(f"[{level}] {content}")
 
     # endregion
+
+    def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
+        self._message_cache.pop((guild_id, channel_id, message_id), None)
+        self._react_role_dict.pop((channel_id, message_id), None)
