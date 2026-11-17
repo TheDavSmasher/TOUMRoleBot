@@ -1,6 +1,9 @@
 import discord
 
 
+EMOJI_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
+
+
 class MongyClient(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
@@ -30,7 +33,16 @@ class MongyClient(discord.Client):
             return None
         return None
 
-    def register_emoji_role(self, message: discord.Message, emoji: str, role: discord.Role):
+    async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role):
+        message: discord.Message | None = None
+        try:
+            message = await channel.send(content=EMOJI_ROLE_FORMAT.format(emoji=emoji, role=role.mention))
+            await message.add_reaction(emoji)
+        except discord.HTTPException as e:
+            if message:
+                await message.delete()
+            raise e
+
         self._role_dict[(message.channel.id, message.id)] = (emoji, role)
 
     # endregion

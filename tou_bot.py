@@ -123,16 +123,8 @@ async def register_emoji_role(
     if not channel:
         return
 
-    message: discord.Message | None = None
-    try:
-        message = await channel.send(content="_ _")
-        await message.add_reaction(emoji)
-    except discord.HTTPException as e:
-        if message:
-            await message.delete()
-        raise e
+    await client.register_emoji_role(channel, str(emoji), role)
 
-    client.register_emoji_role(message, str(emoji), role)
     await interaction.response.send_message(
         content="Registered emoji and role successfully",
         ephemeral=True
