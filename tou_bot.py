@@ -131,7 +131,7 @@ async def register_emoji_role(
     if not channel:
         return
 
-    await client.register_emoji_role(channel, str(emoji), role, desc)
+    await client.register_react_role(channel, str(emoji), role, desc)
 
     await interaction.response.send_message(
         content="Registered emoji and role successfully",
@@ -157,12 +157,12 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     if not member:
         return
 
-    emoji_role = await client.fetch_emoji_role(payload.guild_id, payload.channel_id, payload.message_id)
-    if not emoji_role:
+    react_role = await client.fetch_react_role(payload.guild_id, payload.channel_id, payload.message_id)
+    if not react_role:
         return
 
-    emoji, role = emoji_role
-    if str(payload.emoji) != emoji:
+    react_emoji, role = react_role
+    if str(payload.emoji) != react_emoji:
         return
 
     await member.add_roles(role)
@@ -174,12 +174,12 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     if not member:
         return
 
-    emoji_role = await client.fetch_emoji_role(payload.guild_id, payload.channel_id, payload.message_id)
-    if not emoji_role:
+    react_role = await client.fetch_react_role(payload.guild_id, payload.channel_id, payload.message_id)
+    if not react_role:
         return
 
-    emoji, role = emoji_role
-    if str(payload.emoji) != emoji:
+    react_emoji, role = react_role
+    if str(payload.emoji) != react_emoji:
         return
 
     await member.remove_roles(role)

@@ -2,8 +2,8 @@ import re
 import discord
 
 
-EMOJI_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
-EMOJI_ROLE_MATCH = re.compile(fr"^{EMOJI_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
+REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
+REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
 
 class MongyClient(discord.Client):
@@ -19,31 +19,31 @@ class MongyClient(discord.Client):
 
         super().__init__(intents=intents, allowed_mentions=mentions)
 
-    # region Emoji Role
+    # region React Role
 
-    # (Channel ID, Message ID) -> (Emoji, Role ID)
-    _role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
+    # (Channel ID, Message ID) -> (React Emoji, Role)
+    _react_role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
 
-    async def fetch_emoji_role(self, guild_id: int, channel_id: int, message_id: int) -> None | tuple[str, discord.Role]:
-        if (channel_id, message_id) in self._role_dict:
-            return self._role_dict[(channel_id, message_id)]
+    async def fetch_react_role(self, guild_id: int, channel_id: int, message_id: int) -> None | tuple[str, discord.Role]:
+        if (channel_id, message_id) in self._react_role_dict:
+            return self._react_role_dict[(channel_id, message_id)]
 
         message = await self.get_bot_message(guild_id, channel_id, message_id)
 
-        if message is None or (match := EMOJI_ROLE_MATCH.match(message.content)) is None:
+        if message is None or (match := REACT_ROLE_MATCH.match(message.content)) is None:
             return None
 
         self._remove_message_cache(guild_id, channel_id, message_id)
 
-        emoji = match.group(1)
+        react_emoji = match.group(1)
         role_id = int(match.group(2))
         role = message.guild.get_role(role_id)
 
-        self._role_dict[(channel_id, message_id)] = (emoji, role)
-        return emoji, role
+        self._react_role_dict[(channel_id, message_id)] = (react_emoji, role)
+        return react_emoji, role
 
-    async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role, desc: str | None = None):
-        content = EMOJI_ROLE_FORMAT.format(emoji=emoji, role=role.mention)
+    async def register_react_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role, desc: str | None = None):
+        content = REACT_ROLE_FORMAT.format(emoji=emoji, role=role.mention)
         if desc is not None:
             content += "\n\n" + desc
 
@@ -56,7 +56,7 @@ class MongyClient(discord.Client):
                 await message.delete()
             raise e
 
-        self._role_dict[(message.channel.id, message.id)] = (emoji, role)
+        self._react_role_dict[(message.channel.id, message.id)] = (emoji, role)
 
     # endregion
 
@@ -162,4 +162,4 @@ class MongyClient(discord.Client):
 
     def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
         self._message_cache.pop((guild_id, channel_id, message_id), None)
-        self._role_dict.pop((channel_id, message_id), None)
+        self._react_role_dict.pop((channel_id, message_id), None)
