@@ -24,7 +24,7 @@ class MongyClient(discord.Client):
         message = await self.get_bot_message(guild_id, channel_id, message_id)
 
         # TODO: format message and REGEX
-        if message is None or message.content.startswith('<@!'):
+        if message is None or not message.content.startswith('<@!'):
             return None
         return None
 
