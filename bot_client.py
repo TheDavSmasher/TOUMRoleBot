@@ -212,7 +212,9 @@ class MongyClient(discord.Client):
         if not poll_votes:
             return
 
-        poll_votes[0].discard(user_id)
+        user_ids, role = poll_votes
+
+        user_ids.discard(user_id)
 
     # endregion
 
