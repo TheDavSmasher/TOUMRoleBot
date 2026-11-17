@@ -130,9 +130,10 @@ class MongyClient(discord.Client):
 
     # region Poll Tracking
 
+    # (User IDs, Optional[Role])
     PollVotes = tuple[set[int], discord.Role | None]
 
-    # (Guild ID, Channel ID, Message ID) -> (User IDs, Optional[Role])
+    # (Guild ID, Channel ID, Message ID) -> PollVotes
     _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
 
     async def track_poll(self, message: discord.Message, role: discord.Role | None = None):
