@@ -9,6 +9,10 @@ from role_types import AlignData
 from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, RoleLayout
 
 
+SERVER_ROLES_CHANNEL_ID = 1524624589232017569
+SESSION_PLANNING_CHANNEL_ID = 1470829176066937057
+
+
 client = MongyClient()
 tree = app_commands.CommandTree(client)
 
