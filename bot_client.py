@@ -22,6 +22,20 @@ async def _get_poll_votes(poll: discord.Poll, role: discord.Role | None) -> set[
                 if role is None or role in user.roles])
 
 
+def _valid_track_message(track_message: discord.Message | None, guild_id: int, channel_id: int, message_id: int) -> bool:
+    if not track_message:
+        return False
+
+    track_match = POLL_TRACK_MATCH.match(track_message.content)
+    if (not track_match or
+            int(track_match.group(1)) != guild_id or
+            int(track_match.group(2)) != channel_id or
+            int(track_match.group(3)) != message_id):
+        return False
+
+    return True
+
+
 class MongyClient(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
@@ -156,34 +170,44 @@ class MongyClient(discord.Client):
             if message is not None and message.poll:
                 role = message.role_mentions[0] if message.role_mentions else None
                 user_ids = await _get_poll_votes(message.poll, role)
-                # TODO: get real track_id, if any
-                track_id = -1
+                track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, None)
+                track_id = track_message.id if track_message else -1
                 self._poll_votes[(guild_id, channel_id, message_id)] = (user_ids, role, track_id)
 
         return self._poll_votes.get((guild_id, channel_id, message_id))
 
     async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, track_id: int,
                                      role: discord.Role | None):
-        if track_id == -1:
+        track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, track_id)
+        if not track_message:
             return
 
         message = await self.get_bot_message(guild_id, channel_id, message_id)
         if not message:
             return
 
-        track_message = await self.get_bot_message(guild_id, self._logging_channel_id(guild_id), track_id)
-        if not track_message:
-            return
-
-        track_match = POLL_TRACK_MATCH.match(track_message.content)
-        if (not track_match or
-                int(track_match.group(1)) != guild_id or
-                int(track_match.group(2)) != channel_id or
-                int(track_match.group(3)) != message_id):
-            return
-
         track_log = self._get_poll_track_log(message, role)
         await track_message.edit(content=track_log)
+
+    async def _get_poll_track_message(self, guild_id: int, channel_id: int, message_id: int, track_id: int | None) -> discord.Message | None:
+        if track_id is not None and track_id == -1:
+            return None
+
+        log_channel_id = self._logging_channel_id(guild_id)
+
+        if track_id is not None:
+            track_message = await self.get_bot_message(guild_id, log_channel_id, track_id)
+
+            if _valid_track_message(track_message, guild_id, channel_id, message_id):
+                return track_message
+            return None
+
+        log_channel = self.get_guild_channel(guild_id, log_channel_id)
+        async for message in log_channel.history():
+            if _valid_track_message(message, guild_id, channel_id, message_id):
+                return message
+
+        return None
 
     def _get_poll_track_log(self, message: discord.Message, role: discord.Role | None) -> str:
         members = role.members if role else message.channel.members
