@@ -40,10 +40,14 @@ class MongyClient(discord.Client):
         self._role_dict[(channel_id, message_id)] = (emoji, role)
         return emoji, role
 
-    async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role):
+    async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role, desc: str | None = None):
+        content = EMOJI_ROLE_FORMAT.format(emoji=emoji, role=role.mention)
+        if desc is not None:
+            content += "\n" + desc
+
         message: discord.Message | None = None
         try:
-            message = await channel.send(content=EMOJI_ROLE_FORMAT.format(emoji=emoji, role=role.mention))
+            message = await channel.send(content=content)
             await message.add_reaction(emoji)
         except discord.HTTPException as e:
             if message:

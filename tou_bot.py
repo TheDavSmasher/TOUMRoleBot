@@ -113,17 +113,18 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
 
 @tree.command(name="register_emoji_role", description="Register an message with an emoji and a role in the server.")
-@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will use.")
+@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will use.", desc="Describe what the role does.")
 async def register_emoji_role(
     interaction: discord.Interaction,
     role: discord.Role,
-    emoji: app_commands.Transform[discord.PartialEmoji | str, EmojiTransformer]
+    emoji: app_commands.Transform[discord.PartialEmoji | str, EmojiTransformer],
+    desc: str | None = None
 ):
     channel = client.get_guild_channel(interaction.guild_id, SERVER_ROLES_CHANNEL_ID)
     if not channel:
         return
 
-    await client.register_emoji_role(channel, str(emoji), role)
+    await client.register_emoji_role(channel, str(emoji), role, desc)
 
     await interaction.response.send_message(
         content="Registered emoji and role successfully",
