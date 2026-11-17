@@ -1,7 +1,9 @@
+import re
 import discord
 
 
 EMOJI_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
+EMOJI_ROLE_MATCH = re.compile(fr"^{EMOJI_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
 
 class MongyClient(discord.Client):
@@ -28,10 +30,15 @@ class MongyClient(discord.Client):
 
         message = await self.get_bot_message(guild_id, channel_id, message_id)
 
-        # TODO: format message and REGEX
-        if message is None or not message.content.startswith('<@!'):
+        if message is None or (match := EMOJI_ROLE_MATCH.match(message.content)) is None:
             return None
-        return None
+
+        emoji = match.group(1)
+        role_id = int(match.group(2))
+        role = message.guild.get_role(role_id)
+
+        self._role_dict[(channel_id, message_id)] = (emoji, role)
+        return emoji, role
 
     async def register_emoji_role(self, channel: discord.abc.Messageable, emoji: str, role: discord.Role):
         message: discord.Message | None = None
