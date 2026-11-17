@@ -5,6 +5,8 @@ import discord
 REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
 REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
+POLL_TRACK_FORMAT = "Tracking session poll in {jump_url}:\n\n **Votes:** 0/{total_members}"
+
 LOG_MESSAGE_MATCH = re.compile(r"\[(\w+)]\s+.+")
 
 BOT_LOG_CHANNEL_ID = 1571966492600180876
@@ -157,7 +159,8 @@ class MongyClient(discord.Client):
         total_members = len(members)
         if self.user in members:
             total_members = total_members - 1
-        return f"Tracking session poll in {message.jump_url}:\n\n **Votes:** 0/{total_members}"
+
+        return POLL_TRACK_FORMAT.format(jump_url=message.jump_url, total_members=total_members)
 
     # endregion
 
