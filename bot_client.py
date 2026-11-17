@@ -21,10 +21,10 @@ class MongyClient(discord.Client):
         if (channel_id, message_id) in self._role_dict:
             return self._role_dict[(channel_id, message_id)]
 
-        message = await self.get_guild_message(guild_id, channel_id, message_id)
+        message = await self.get_bot_message(guild_id, channel_id, message_id)
 
         # TODO: format message and REGEX
-        if message.author != self.user or message.content.startswith('<@!'):
+        if message is None or message.content.startswith('<@!'):
             return None
         return None
 
@@ -62,23 +62,13 @@ class MongyClient(discord.Client):
     # (Guild ID, Channel ID, Message ID) -> Message
     _message_cache: dict[tuple[int, int, int], discord.Message | None] = {}
 
-    async def get_guild_message(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Message | None:
+    async def get_bot_message(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Message | None:
         if (guild_id, channel_id, message_id) not in self._message_cache:
             if (channel := self.get_guild_channel(guild_id, channel_id)) is not None:
-                self._message_cache[(guild_id, channel_id, message_id)] = await channel.fetch_message(message_id)
+                if (message := await channel.fetch_message(message_id)) is not None and message.author == self.user:
+                    self._message_cache[(guild_id, channel_id, message_id)] = message
 
         return self._message_cache.get((guild_id, channel_id, message_id))
-
-    # (Guild ID, Channel ID, Message ID) -> Poll
-    _bot_poll_cache: dict[tuple[int, int, int], discord.Poll | None] = {}
-
-    async def get_bot_poll(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Poll | None:
-        if (guild_id, channel_id, message_id) not in self._bot_poll_cache:
-            message = await self.get_guild_message(guild_id, channel_id, message_id)
-            if message is not None and message.author == self.user and message.poll is not None:
-                self._bot_poll_cache[(guild_id, channel_id, message_id)] = message.poll
-
-        return self._bot_poll_cache.get((guild_id, channel_id, message_id))
 
     # endregion
 
@@ -106,29 +96,29 @@ class MongyClient(discord.Client):
         if not member or member.bot:
             return
 
-        poll = await self.get_bot_poll(payload.guild_id, payload.channel_id, payload.message_id)
-        if not poll:
+        message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
+        if not message or message.poll is None:
             return
 
-        answer = poll.get_answer(payload.answer_id)
+        answer = message.poll.get_answer(payload.answer_id)
         if not answer:
             return
 
-        print(f"{member.name} voted for '{answer.text}' in poll: '{poll.question}'")
+        print(f"{member.name} voted for '{answer.text}' in poll: '{message.poll.question}'")
 
     async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
         member = self.get_guild_member(payload.guild_id, payload.user_id)
         if not member or member.bot:
             return
 
-        poll = await self.get_bot_poll(payload.guild_id, payload.channel_id, payload.message_id)
-        if not poll:
+        message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
+        if not message or message.poll is None:
             return
 
-        answer = poll.get_answer(payload.answer_id)
+        answer = message.poll.get_answer(payload.answer_id)
         if not answer:
             return
 
-        print(f"{member.name} removed their vote for '{answer.text}' in poll: '{poll.question}'")
+        print(f"{member.name} removed their vote for '{answer.text}' in poll: '{message.poll.question}'")
 
     # endregion
