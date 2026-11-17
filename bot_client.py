@@ -10,6 +10,13 @@ LOG_MESSAGE_MATCH = re.compile(r"\[(?:INFO|ERROR)]\s+.+")
 BOT_LOG_CHANNEL_ID = 1571966492600180876
 
 
+async def _get_poll_votes(poll: discord.Poll, role: discord.Role | None) -> set[int]:
+    return set([user.id
+                for answer in poll.answers
+                async for user in answer.voters()
+                if role is None or role in user.roles])
+
+
 class MongyClient(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
@@ -117,6 +124,29 @@ class MongyClient(discord.Client):
 
     # endregion
 
+    # region Poll Tracking
+
+    PollVotes = tuple[set[int], discord.Role | None]
+
+    # (Guild ID, Channel ID, Message ID) -> (User IDs, Optional[Role])
+    _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
+
+    def track_poll(self, poll: discord.Poll, role: discord.Role | None = None):
+        message = poll.message
+        self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role)
+
+    async def get_tracked_poll(self, guild_id: int, channel_id: int, message_id: int) -> PollVotes | None:
+        if (guild_id, channel_id, message_id) not in self._poll_votes:
+            message = await self.get_bot_message(guild_id, channel_id, message_id)
+            if message is not None and message.poll:
+                role = message.role_mentions[0] if message.role_mentions else None
+                user_ids = await _get_poll_votes(message.poll, role)
+                self._poll_votes[(guild_id, channel_id, message_id)] = (user_ids, role)
+
+        return self._poll_votes.get((guild_id, channel_id, message_id))
+
+    # endregion
+
     # region Events
 
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
@@ -137,34 +167,34 @@ class MongyClient(discord.Client):
             self._remove_message_cache(guild_id, channel_id, message_id)
 
     async def on_raw_poll_vote_add(self, payload: discord.RawPollVoteActionEvent):
-        member = self.get_guild_member(payload.guild_id, payload.user_id)
+        guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
+
+        poll_votes = await self.get_tracked_poll(guild_id, channel_id, message_id)
+        if not poll_votes:
+            return
+
+        user_ids, role = poll_votes
+
+        if user_id in user_ids:
+            return
+
+        member = self.get_guild_member(guild_id, user_id)
         if not member:
             return
 
-        message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
-        if not message or message.poll is None:
+        if role and role not in member.roles:
             return
 
-        answer = message.poll.get_answer(payload.answer_id)
-        if not answer:
-            return
-
-        print(f"{member.name} voted for '{answer.text}' in poll: '{message.poll.question}'")
+        self._poll_votes[(guild_id, channel_id, message_id)][0].add(user_id)
 
     async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
-        member = self.get_guild_member(payload.guild_id, payload.user_id)
-        if not member:
+        guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
+
+        poll_votes = await self.get_tracked_poll(guild_id, channel_id, message_id)
+        if not poll_votes:
             return
 
-        message = await self.get_bot_message(payload.guild_id, payload.channel_id, payload.message_id)
-        if not message or message.poll is None:
-            return
-
-        answer = message.poll.get_answer(payload.answer_id)
-        if not answer:
-            return
-
-        print(f"{member.name} removed their vote for '{answer.text}' in poll: '{message.poll.question}'")
+        self._poll_votes[(guild_id, channel_id, message_id)][0].discard(user_id)
 
     # endregion
 

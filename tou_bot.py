@@ -103,18 +103,19 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
     channel = client.get_guild_channel(interaction.guild_id, SESSION_PLANNING_CHANNEL_ID)
 
-    content = None
+    role = None
     if ping:
-        content = interaction.guild.get_role(MONGY_REGULAR_ROLE_ID).mention
+        role = interaction.guild.get_role(MONGY_REGULAR_ROLE_ID)
 
     message = await channel.send(
-        content=content,
+        content=role.mention if role else None,
         poll=poll,
         allowed_mentions=discord.AllowedMentions(everyone=True)
     )
 
     client.cache_sent_message(message)
     await client.info(interaction.guild_id, "Poll created successfully")
+    client.track_poll(poll, role)
 
 
 @tree.command(name="register_emoji_role", description="Register an message with an emoji and a role in the server.")
