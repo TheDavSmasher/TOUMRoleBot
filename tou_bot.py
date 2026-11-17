@@ -115,7 +115,7 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
     client.cache_sent_message(message)
     await client.info(interaction.guild_id, "Poll created successfully")
-    client.track_poll(poll, role)
+    client.track_poll(message, role)
 
 
 @tree.command(name="register_react_role", description="Register an message with an emoji reaction to give out a role in the server.")
