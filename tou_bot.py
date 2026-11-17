@@ -119,7 +119,7 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
 
 @tree.command(name="register_react_role", description="Register an message with an emoji reaction to give out a role in the server.")
-@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will expect in a reaction.", desc="Describe what the role does.")
+@app_commands.describe(role="The role to give to the user.", react_emoji="The emoji the message will expect in a reaction.", desc="Describe what the role does.")
 async def register_react_role(
     interaction: discord.Interaction,
     role: discord.Role,
