@@ -208,7 +208,7 @@ class MongyClient(discord.Client):
 
     async def _log_level(self, guild_id: int, content: str, level: str):
         channel = self.get_guild_channel(guild_id, BOT_LOG_CHANNEL_ID)
-        await channel.send(f"[{level}] {content}")
+        await channel.send(f"[{level}] {content}", allowed_mentions=discord.AllowedMentions.none())
 
     # endregion
 

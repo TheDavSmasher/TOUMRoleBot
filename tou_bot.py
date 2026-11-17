@@ -130,7 +130,7 @@ async def register_emoji_role(
 
     await client.register_react_role(channel, str(emoji), role, desc)
 
-    await client.info(interaction.guild_id, "Registered emoji and role successfully")
+    await client.info(interaction.guild_id, f"Registered emoji {emoji} and role {role.mention} successfully")
 
 
 @register_emoji_role.error
@@ -158,7 +158,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
     await member.add_roles(role)
 
-    await client.info(payload.guild_id, f"Added {role.name} role to {member.name}.")
+    await client.info(payload.guild_id, f"Added {role.mention} role to {member.mention}.")
 
 
 @client.event
@@ -177,7 +177,7 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 
     await member.remove_roles(role)
 
-    await client.info(payload.guild_id, f"Removed {role.name} role from {member.name}.")
+    await client.info(payload.guild_id, f"Removed {role.mention} role from {member.mention}.")
 
 
 @client.event
