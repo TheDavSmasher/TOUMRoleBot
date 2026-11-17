@@ -128,8 +128,6 @@ async def register_emoji_role(
     desc: str | None = None
 ):
     channel = client.get_guild_channel(interaction.guild_id, SERVER_ROLES_CHANNEL_ID)
-    if not channel:
-        return
 
     await client.register_react_role(channel, str(emoji), role, desc)
 
