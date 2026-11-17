@@ -289,7 +289,7 @@ class MongyClient(discord.Client):
         if not just_fetched and user_id not in user_ids:
             return
 
-        poll_votes[0].discard(user_id)
+        user_ids.discard(user_id)
 
         await self._update_poll_track_log(guild_id, channel_id, message_id, poll_votes)
 
