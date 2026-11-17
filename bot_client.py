@@ -110,12 +110,12 @@ class MongyClient(discord.Client):
 
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         guild_id, channel_id, message_id = payload.guild_id, payload.channel_id, payload.message_id
-        self._message_cache.pop((guild_id, channel_id, message_id), None)
+        self._remove_message_cache(guild_id, channel_id, message_id)
 
     async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
         guild_id, channel_id = payload.guild_id, payload.channel_id
         for message_id in payload.message_ids:
-            self._message_cache.pop((guild_id, channel_id, message_id), None)
+            self._remove_message_cache(guild_id, channel_id, message_id)
 
     async def on_raw_poll_vote_add(self, payload: discord.RawPollVoteActionEvent):
         member = self.get_guild_member(payload.guild_id, payload.user_id)
@@ -148,3 +148,7 @@ class MongyClient(discord.Client):
         print(f"{member.name} removed their vote for '{answer.text}' in poll: '{message.poll.question}'")
 
     # endregion
+
+    def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
+        self._message_cache.pop((guild_id, channel_id, message_id), None)
+        self._role_dict.pop((channel_id, message_id), None)
