@@ -10,6 +10,8 @@ from role_types import AlignData
 from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, RoleLayout
 
 
+MONGY_REGULAR_ROLE_ID = 1572303236080341173
+
 SERVER_ROLES_CHANNEL_ID = 1524624589232017569
 SESSION_PLANNING_CHANNEL_ID = 1470829176066937057
 
@@ -82,7 +84,7 @@ async def find_role(interaction: discord.Interaction, role: str):
 
 
 @tree.command(name="session_poll", description="Create a poll for session attendance.")
-@app_commands.describe(ping="Ping @everyone")
+@app_commands.describe(ping="Ping @Mongy Regular")
 async def host_session_poll(interaction: discord.Interaction, ping: bool):
     poll = discord.Poll(
         question="Days for Session",
@@ -100,8 +102,13 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     poll.add_answer(text="Not this week")
 
     channel = client.get_guild_channel(interaction.guild_id, SESSION_PLANNING_CHANNEL_ID)
+
+    content = None
+    if ping:
+        content = interaction.guild.get_role(MONGY_REGULAR_ROLE_ID).mention
+
     await channel.send(
-        content="@everyone" if ping else None,
+        content=content,
         poll=poll,
         allowed_mentions=discord.AllowedMentions(everyone=True)
     )
