@@ -94,9 +94,16 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     poll.add_answer(text="Unsure")
     poll.add_answer(text="Not this week")
 
-    await interaction.response.send_message(
+    channel = client.get_guild_channel(interaction.guild_id, SESSION_PLANNING_CHANNEL_ID)
+    await channel.send(
         content="@everyone" if ping else None,
-        poll=poll
+        poll=poll,
+        allowed_mentions=discord.AllowedMentions(everyone=True)
+    )
+
+    await interaction.response.send_message(
+        content="Poll created successfully",
+        ephemeral=True
     )
 
 # endregion
