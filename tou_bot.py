@@ -107,12 +107,13 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
     if ping:
         content = interaction.guild.get_role(MONGY_REGULAR_ROLE_ID).mention
 
-    await channel.send(
+    message = await channel.send(
         content=content,
         poll=poll,
         allowed_mentions=discord.AllowedMentions(everyone=True)
     )
 
+    client.cache_sent_message(message)
     await client.info(interaction.guild_id, "Poll created successfully")
 
 

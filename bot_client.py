@@ -109,6 +109,9 @@ class MongyClient(discord.Client):
 
         return self._message_cache.get((guild_id, channel_id, message_id))
 
+    def cache_sent_message(self, message: discord.Message):
+        self._message_cache[(message.guild.id, message.channel.id, message.id)] = message
+
     # endregion
 
     # region Events
