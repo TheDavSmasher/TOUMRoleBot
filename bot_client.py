@@ -5,7 +5,10 @@ import discord
 REACT_ROLE_FORMAT = "React with {emoji} to this message to receive the {role} role."
 REACT_ROLE_MATCH = re.compile(fr"^{REACT_ROLE_FORMAT.format(emoji=r"(.+)", role=r"<@&(\d+)>")}")
 
+MESSAGE_URL_RE = r"https://discord.com/channels/(\d+)/(\d+)/(\d+)"
+
 POLL_TRACK_FORMAT = "[POLL] Tracking session poll in {jump_url}:\n\n **Votes:** 0/{total_members}"
+POLL_TRACK_MATCH = re.compile(re.escape(POLL_TRACK_FORMAT.format(jump_url=MESSAGE_URL_RE, total_members=r"\d+")))
 
 LOG_MESSAGE_MATCH = re.compile(r"\[(\w+)]\s+.+")
 
@@ -167,6 +170,13 @@ class MongyClient(discord.Client):
 
         track_message = await self.get_bot_message(guild_id, self._logging_channel_id(guild_id), track_id)
         if not track_message:
+            return
+
+        track_match = POLL_TRACK_MATCH.match(track_message.content)
+        if (not track_match or
+                int(track_match.group(1)) != guild_id or
+                int(track_match.group(2)) != channel_id or
+                int(track_match.group(3)) != message_id):
             return
 
         track_log = self._get_poll_track_log(message, role)
