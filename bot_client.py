@@ -73,6 +73,9 @@ class MongyClient(discord.Client):
     _member_cache: dict[tuple[int, int], discord.Member | None] = {}
 
     def get_guild_member(self, guild_id: int, member_id: int, /) -> discord.Member | None:
+        if member_id == self.user.id:
+            return None
+
         if (guild_id, member_id) not in self._member_cache:
             if (guild := self.get_guild(guild_id)) is not None:
                 self._member_cache[(guild_id, member_id)] = guild.get_member(member_id)
