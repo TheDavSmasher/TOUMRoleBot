@@ -42,21 +42,23 @@ async def all_roles(interaction: discord.Interaction):
 @tree.command(name="update_roles", description="Update the roles marked as active.")
 @app_commands.describe(config_file="Config file")
 async def update_roles(interaction: discord.Interaction, config_file: discord.Attachment):
-    try:
-        await interaction.response.defer(
-            ephemeral=True
-        )
-        config_byes = await config_file.read()
-        reload_config(config_byes)
-        await interaction.followup.send(
-            "Active roles updated.",
-            ephemeral=True
-        )
-    except Exception as e:
-        await interaction.followup.send(
-            f"An error occurred while loading new file: {e}",
-            ephemeral=True
-        )
+    await interaction.response.defer(
+        ephemeral=True
+    )
+    config_byes = await config_file.read()
+    reload_config(config_byes)
+    await interaction.followup.send(
+        "Active roles updated.",
+        ephemeral=True
+    )
+
+
+@update_roles.error
+async def update_roles_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    await interaction.followup.send(
+        f"An error occurred while loading new file: {error}",
+        ephemeral=True
+    )
 
 
 async def find_role_autocomplete(_: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
