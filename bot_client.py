@@ -30,6 +30,9 @@ class MongyClient(discord.Client):
             return None
         return None
 
+    def register_emoji_role(self, message: discord.Message, emoji: str, role: discord.Role):
+        self._role_dict[(message.channel.id, message.id)] = (emoji, role)
+
     # endregion
 
     # region Cache

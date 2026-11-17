@@ -5,6 +5,7 @@ import discord
 from discord import app_commands
 
 from bot_client import MongyClient
+from emoji_transformer import EmojiTransformer
 from role_types import AlignData
 from tou_bot_layout import MongyLayout, filtered, reload_config, get_role_list, RoleLayout
 
@@ -105,6 +106,41 @@ async def host_session_poll(interaction: discord.Interaction, ping: bool):
 
     await interaction.response.send_message(
         content="Poll created successfully",
+        ephemeral=True
+    )
+
+
+@tree.command(name="register_emoji_role", description="Register an message with an emoji and a role in the server.")
+@app_commands.describe(role="The role to give to the user.", emoji="The emoji the message will use.")
+async def register_emoji_role(
+    interaction: discord.Interaction,
+    role: discord.Role,
+    emoji: app_commands.Transform[discord.PartialEmoji | str, EmojiTransformer]
+):
+    channel = client.get_guild_channel(interaction.guild_id, SERVER_ROLES_CHANNEL_ID)
+    if not channel:
+        return
+
+    message: discord.Message | None = None
+    try:
+        message = await channel.send(content="_ _")
+        await message.add_reaction(emoji)
+    except discord.HTTPException as e:
+        if message:
+            await message.delete()
+        raise e
+
+    client.register_emoji_role(message, str(emoji), role)
+    await interaction.response.send_message(
+        content="Registered emoji and role successfully",
+        ephemeral=True
+    )
+
+
+@register_emoji_role.error
+async def register_emoji_role_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    await interaction.response.send_message(
+        content=f"An error occurred while registering an emoji role: {error}",
         ephemeral=True
     )
 
