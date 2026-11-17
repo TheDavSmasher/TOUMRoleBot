@@ -2,9 +2,6 @@ import discord
 
 
 class MongyClient(discord.Client):
-    # (Channel ID, Message ID) -> (Emoji, Role ID)
-    _role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
-
     def __init__(self):
         intents = discord.Intents.default()
         intents.members = True
@@ -17,6 +14,11 @@ class MongyClient(discord.Client):
 
         super().__init__(intents=intents, allowed_mentions=mentions)
 
+    # region Emoji Role
+
+    # (Channel ID, Message ID) -> (Emoji, Role ID)
+    _role_dict: dict[tuple[int, int], tuple[str, discord.Role]] = {}
+
     async def fetch_emoji_role(self, guild_id: int, channel_id: int, message_id: int) -> None | tuple[str, discord.Role]:
         if (channel_id, message_id) in self._role_dict:
             return self._role_dict[(channel_id, message_id)]
@@ -27,6 +29,8 @@ class MongyClient(discord.Client):
         if message is None or not message.content.startswith('<@!'):
             return None
         return None
+
+    # endregion
 
     # region Cache
 
