@@ -133,8 +133,8 @@ class MongyClient(discord.Client):
 
     # region Poll Tracking
 
-    # (User IDs, Optional[Role], Optional[Tracking Message ID])
-    PollVotes = tuple[set[int], discord.Role | None, int | None]
+    # (User IDs, Optional[Role], Tracking Message ID)
+    PollVotes = tuple[set[int], discord.Role | None, int]
 
     # (Guild ID, Channel ID, Message ID) -> PollVotes
     _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
@@ -157,13 +157,16 @@ class MongyClient(discord.Client):
                 role = message.role_mentions[0] if message.role_mentions else None
                 user_ids = await _get_poll_votes(message.poll, role)
                 # TODO: get real track_id, if any
-                track_id = None
+                track_id = -1
                 self._poll_votes[(guild_id, channel_id, message_id)] = (user_ids, role, track_id)
 
         return self._poll_votes.get((guild_id, channel_id, message_id))
 
-    async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, track_id: int | None,
+    async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, track_id: int,
                                      role: discord.Role | None):
+        if track_id == -1:
+            return
+
         message = await self.get_bot_message(guild_id, channel_id, message_id)
         if not message:
             return
