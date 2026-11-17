@@ -202,7 +202,7 @@ class MongyClient(discord.Client):
         if role and role not in member.roles:
             return
 
-        self._poll_votes[(guild_id, channel_id, message_id)][0].add(user_id)
+        user_ids.add(user_id)
 
     async def on_raw_poll_vote_remove(self, payload: discord.RawPollVoteActionEvent):
         guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
@@ -211,7 +211,7 @@ class MongyClient(discord.Client):
         if not poll_votes:
             return
 
-        self._poll_votes[(guild_id, channel_id, message_id)][0].discard(user_id)
+        poll_votes[0].discard(user_id)
 
     # endregion
 
