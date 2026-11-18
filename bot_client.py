@@ -116,51 +116,55 @@ class MongyClient(discord.Client):
         if user_id == self.user.id:
             return None
 
-        if (guild_id, user_id) not in self._member_cache:
+        key = (guild_id, user_id)
+        if key not in self._member_cache:
             if (guild := self.get_guild(guild_id)) is not None:
                 member = guild.get_member(user_id)
                 if member is not None and not member.bot:
-                    self._member_cache[(guild_id, user_id)] = member
+                    self._member_cache[key] = member
 
-        return self._member_cache.get((guild_id, user_id))
+        return self._member_cache.get(key)
 
     # (Guild ID, Channel ID) -> Channel
     _channel_cache: dict[tuple[int, int], discord.abc.Messageable | None] = {}
 
     def get_guild_channel(self, guild_id: int, channel_id: int, /) -> discord.abc.Messageable | None:
-        if (guild_id, channel_id) not in self._channel_cache:
+        key = (guild_id, channel_id)
+        if key not in self._channel_cache:
             if (guild := self.get_guild(guild_id)) is not None:
-                self._channel_cache[(guild_id, channel_id)] = guild.get_channel(channel_id)
+                self._channel_cache[key] = guild.get_channel(channel_id)
 
-        return self._channel_cache.get((guild_id, channel_id))
+        return self._channel_cache.get(key)
 
     # (Guild ID, Channel ID, Message ID) -> Message
     _message_cache: dict[tuple[int, int, int], discord.Message | None] = {}
 
     async def get_bot_message(self, guild_id: int, channel_id: int, message_id: int, /) -> discord.Message | None:
-        if (guild_id, channel_id, message_id) not in self._message_cache:
-            if (channel := self.get_guild_channel(guild_id, channel_id)) is not None:
+        key = (guild_id, channel_id, message_id)
+        if key not in self._message_cache:
+            if (channel := self.get_guild_channel(*key[:2])) is not None:
                 message = await channel.fetch_message(message_id)
                 if message is not None and message.author == self.user:
                     log_match = LOG_MESSAGE_MATCH.match(message.content)
                     poll_match = _message_track_match(message.content)
                     if (log_match is None or log_match.group(1) not in ("INFO", "ERROR") or
-                            (poll_match is not None and
-                             self.get_bot_message(poll_match[0], poll_match[1], poll_match[2]))):
-                        self._message_cache[(guild_id, channel_id, message_id)] = message
+                            (poll_match is not None and self.get_bot_message(*poll_match))):
+                        self._message_cache[key] = message
 
-        return self._message_cache.get((guild_id, channel_id, message_id))
+        return self._message_cache.get(key)
 
     def _cache_sent_message(self, message: discord.Message):
         self._message_cache[(message.guild.id, message.channel.id, message.id)] = message
 
     def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
-        message = self._message_cache.pop((guild_id, channel_id, message_id), None)
+        key = (guild_id, channel_id, message_id)
+
+        message = self._message_cache.pop(key, None)
         self._react_role_dict.pop((channel_id, message_id), None)
 
         log_channel_id = self._logging_channel_id(guild_id)
         # If removing tracked poll,
-        poll_votes = self._poll_votes.pop((guild_id, channel_id, message_id), None)
+        poll_votes = self._poll_votes.pop(key, None)
         if poll_votes:
             # Remove its track log
             self._message_cache.pop((guild_id, log_channel_id, poll_votes[2]), None)
@@ -197,10 +201,11 @@ class MongyClient(discord.Client):
         update = False
         result = None
 
-        if (guild_id, channel_id, message_id) not in self._poll_votes:
-            message = await self.get_bot_message(guild_id, channel_id, message_id)
+        key = (guild_id, channel_id, message_id)
+        if key not in self._poll_votes:
+            message = await self.get_bot_message(*key)
             if message is not None and message.poll:
-                track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, None)
+                track_message = await self._get_poll_track_message(None, *key)
                 if track_message is not None:
                     role = message.role_mentions[0] if message.role_mentions else None
                     user_ids = await _get_poll_votes(message.poll, role)
@@ -208,7 +213,7 @@ class MongyClient(discord.Client):
                     update = True
                     result = (user_ids, role, track_message.id, True)
         else:
-            votes = self._poll_votes[(guild_id, channel_id, message_id)]
+            votes = self._poll_votes[key]
             if votes[3]:
                 update = True
                 result = (votes[0], votes[1], votes[2], False)
@@ -216,14 +221,14 @@ class MongyClient(discord.Client):
                 result = votes
 
         if result and update:
-            self._poll_votes[(guild_id, channel_id, message_id)] = result
+            self._poll_votes[key] = result
 
         return result
 
     async def _update_poll_track_log(self, guild_id: int, channel_id: int, message_id: int, votes: PollVotes):
         user_ids, role, track_id, _ = votes
 
-        track_message = await self._get_poll_track_message(guild_id, channel_id, message_id, track_id)
+        track_message = await self._get_poll_track_message(track_id, guild_id, channel_id, message_id)
         if not track_message:
             return
 
@@ -234,7 +239,7 @@ class MongyClient(discord.Client):
         track_log = self._get_poll_track_log(message, role, len(user_ids))
         await track_message.edit(content=track_log)
 
-    async def _get_poll_track_message(self, guild_id: int, channel_id: int, message_id: int, track_id: int | None) -> discord.Message | None:
+    async def _get_poll_track_message(self, track_id: int | None, guild_id: int, channel_id: int, message_id: int) -> discord.Message | None:
         log_channel_id = self._logging_channel_id(guild_id)
 
         if track_id is not None:
