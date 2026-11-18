@@ -142,11 +142,13 @@ async def register_react_role_error(interaction: discord.Interaction, error: app
 
 @client.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    member = client.get_guild_member(payload.guild_id, payload.user_id)
+    guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
+
+    member = client.get_guild_member(guild_id, user_id)
     if not member:
         return
 
-    react_role = await client.fetch_react_role(payload.guild_id, payload.channel_id, payload.message_id)
+    react_role = await client.fetch_react_role(guild_id, channel_id, message_id)
     if not react_role:
         return
 
@@ -156,16 +158,18 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
 
     await member.add_roles(role)
 
-    await client.info(payload.guild_id, f"Added {role.mention} role to {member.mention}.")
+    await client.info(guild_id, f"Added {role.mention} role to {member.mention}.")
 
 
 @client.event
 async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
-    member = client.get_guild_member(payload.guild_id, payload.user_id)
+    guild_id, channel_id, message_id, user_id = payload.guild_id, payload.channel_id, payload.message_id, payload.user_id
+
+    member = client.get_guild_member(guild_id, user_id)
     if not member:
         return
 
-    react_role = await client.fetch_react_role(payload.guild_id, payload.channel_id, payload.message_id)
+    react_role = await client.fetch_react_role(guild_id, channel_id, message_id)
     if not react_role:
         return
 
@@ -175,7 +179,7 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 
     await member.remove_roles(role)
 
-    await client.info(payload.guild_id, f"Removed {role.mention} role from {member.mention}.")
+    await client.info(guild_id, f"Removed {role.mention} role from {member.mention}.")
 
 
 @client.event
