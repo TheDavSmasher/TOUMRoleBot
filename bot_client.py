@@ -22,15 +22,23 @@ async def _get_poll_votes(poll: discord.Poll, role: discord.Role | None) -> set[
                 if role is None or role in user.roles])
 
 
+def _message_track_match(content: str) -> tuple[int, int, int] | None:
+    track_match = POLL_TRACK_MATCH.match(content)
+    if not track_match:
+        return None
+
+    return track_match.group(1), track_match.group(2), track_match.group(3)
+
+
 def _valid_track_message(track_message: discord.Message | None, guild_id: int, channel_id: int, message_id: int) -> bool:
     if not track_message:
         return False
 
-    track_match = POLL_TRACK_MATCH.match(track_message.content)
+    track_match = _message_track_match(track_message.content)
     if (not track_match or
-            int(track_match.group(1)) != guild_id or
-            int(track_match.group(2)) != channel_id or
-            int(track_match.group(3)) != message_id):
+            track_match[0] != guild_id or
+            track_match[1] != channel_id or
+            track_match[2] != message_id):
         return False
 
     return True
@@ -135,10 +143,10 @@ class MongyClient(discord.Client):
                 message = await channel.fetch_message(message_id)
                 if message is not None and message.author == self.user:
                     log_match = LOG_MESSAGE_MATCH.match(message.content)
-                    poll_match = POLL_TRACK_MATCH.match(message.content)
+                    poll_match = _message_track_match(message.content)
                     if (log_match is None or log_match.group(1) not in ("INFO", "ERROR") or
                             (poll_match is not None and
-                             self.get_bot_message(poll_match.group(1), poll_match.group(2), poll_match.group(3)))):
+                             self.get_bot_message(poll_match[0], poll_match[1], poll_match[2]))):
                         self._message_cache[(guild_id, channel_id, message_id)] = message
 
         return self._message_cache.get((guild_id, channel_id, message_id))
@@ -325,6 +333,6 @@ class MongyClient(discord.Client):
 
         # If removing track log,
         if (message and channel_id == log_channel_id and
-                (poll_match := POLL_TRACK_MATCH.match(message.content)) is not None):
+                (poll_match := _message_track_match(message.content)) is not None):
             # Remove its poll tracking
-            self._message_cache.pop((poll_match.group(1), poll_match.group(2), poll_match.group(3)), None)
+            self._message_cache.pop(poll_match, None)
