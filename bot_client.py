@@ -151,7 +151,7 @@ class MongyClient(discord.Client):
 
         return self._message_cache.get((guild_id, channel_id, message_id))
 
-    def cache_sent_message(self, message: discord.Message):
+    def _cache_sent_message(self, message: discord.Message):
         self._message_cache[(message.guild.id, message.channel.id, message.id)] = message
 
     # endregion
@@ -165,13 +165,13 @@ class MongyClient(discord.Client):
     _poll_votes: dict[tuple[int, int, int], PollVotes] = {}
 
     async def track_poll(self, message: discord.Message, role: discord.Role | None = None):
-        self.cache_sent_message(message)
+        self._cache_sent_message(message)
 
         guild_id = message.guild.id
         track_log = self._get_poll_track_log(message, role, 0)
         log_channel = self.get_guild_channel(guild_id, self._logging_channel_id(guild_id))
         track_message = await log_channel.send(content=track_log)
-        self.cache_sent_message(track_message)
+        self._cache_sent_message(track_message)
 
         self._poll_votes[(message.guild.id, message.channel.id, message.id)] = (set(), role, track_message.id, False)
 
