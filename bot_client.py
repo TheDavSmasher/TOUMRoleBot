@@ -154,6 +154,24 @@ class MongyClient(discord.Client):
     def _cache_sent_message(self, message: discord.Message):
         self._message_cache[(message.guild.id, message.channel.id, message.id)] = message
 
+    def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
+        message = self._message_cache.pop((guild_id, channel_id, message_id), None)
+        self._react_role_dict.pop((channel_id, message_id), None)
+
+        log_channel_id = self._logging_channel_id(guild_id)
+        # If removing tracked poll,
+        poll_votes = self._poll_votes.pop((guild_id, channel_id, message_id), None)
+        if poll_votes:
+            # Remove its track log
+            self._message_cache.pop((guild_id, log_channel_id, poll_votes[2]), None)
+            return
+
+        # If removing track log,
+        if (message and channel_id == log_channel_id and
+                (poll_match := _message_track_match(message.content)) is not None):
+            # Remove its poll tracking
+            self._message_cache.pop(poll_match, None)
+
     # endregion
 
     # region Poll Tracking
@@ -318,21 +336,3 @@ class MongyClient(discord.Client):
         return await channel.send(f"[{level}] {content}", allowed_mentions=discord.AllowedMentions.none())
 
     # endregion
-
-    def _remove_message_cache(self, guild_id: int, channel_id: int, message_id: int):
-        message = self._message_cache.pop((guild_id, channel_id, message_id), None)
-        self._react_role_dict.pop((channel_id, message_id), None)
-
-        log_channel_id = self._logging_channel_id(guild_id)
-        # If removing tracked poll,
-        poll_votes = self._poll_votes.pop((guild_id, channel_id, message_id), None)
-        if poll_votes:
-            # Remove its track log
-            self._message_cache.pop((guild_id, log_channel_id, poll_votes[2]), None)
-            return
-
-        # If removing track log,
-        if (message and channel_id == log_channel_id and
-                (poll_match := _message_track_match(message.content)) is not None):
-            # Remove its poll tracking
-            self._message_cache.pop(poll_match, None)
